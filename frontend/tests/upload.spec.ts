@@ -28,5 +28,6 @@ test('template upload slots validate, preview, replace and remove real files', a
   await expect(page.getByText('mountain.png', { exact: true })).toBeVisible();
   await expect(page.getByText('上传成功', { exact: true })).toHaveCount(2);
   await submit.click();
-  await expect(page.getByRole('region', { name: '提交回执' })).toContainText('海边双拼');
+  const id = await page.getByRole('region', { name: '提交回执' }).getByLabel('任务 ID').innerText();
+  await expect(page.getByRole('article', { name: `任务 ${id}`, exact: true })).toContainText('海边双拼');
 });

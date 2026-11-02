@@ -1,5 +1,7 @@
-import { localUrl, positiveInteger, record, requestJson, RequestError, text } from '../../shared/api/http';
-import type { Asset, TaskReceipt } from './types';
+import { localUrl, positiveInteger, record, requestJson, text } from '../../shared/api/http';
+import { parseTask } from '../tasks/api';
+import type { Task } from '../tasks/types';
+import type { Asset } from './types';
 
 export async function uploadAsset(templateId: string, file: File, signal: AbortSignal): Promise<Asset> {
   const body = new FormData();
@@ -15,21 +17,11 @@ export async function uploadAsset(templateId: string, file: File, signal: AbortS
   };
 }
 
-export async function createTask(templateId: string, assetIds: string[], signal: AbortSignal): Promise<TaskReceipt> {
-  const task = record(await requestJson('/api/tasks', {
+export async function createTask(templateId: string, assetIds: string[], signal: AbortSignal): Promise<Task> {
+  return parseTask(await requestJson('/api/tasks', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ templateId, assetIds }),
     signal,
   }));
-  const status = task.status;
-  if (status !== 'QUEUED' && status !== 'RUNNING' && status !== 'SUCCEEDED' && status !== 'FAILED') {
-    throw new RequestError('服务返回的任务状态无效。', 502, 'INVALID_RESPONSE');
-  }
-  return {
-    id: text(task.id),
-    templateTitle: text(task.templateTitle),
-    status,
-    failure: task.failure === null ? null : { message: text(record(task.failure).message) },
-  };
 }

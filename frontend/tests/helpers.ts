@@ -35,7 +35,7 @@ export async function ignoreTransportCancellation(page: Page) {
     window.fetch = (input, init) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
       const pathname = new URL(url, window.location.href).pathname;
-      return original(input, pathname === '/api/assets' || pathname === '/api/tasks'
+      return original(input, pathname === '/api/assets' || pathname.startsWith('/api/tasks')
         ? { ...init, signal: null } : init);
     };
   });

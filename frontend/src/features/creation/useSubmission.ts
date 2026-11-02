@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { errorMessage, isAbort, RequestError } from '../../shared/api/http';
 import { createTask } from './api';
 import type { Submission } from './types';
+import type { Task } from '../tasks/types';
 
 /** A synchronous request owner prevents duplicate writes before React renders disabled controls. */
-export function useSubmission(templateId: string, onUnauthorized: () => void) {
+export function useSubmission(templateId: string, onUnauthorized: () => void, onAccepted: (task: Task) => void) {
   const [submission, setSubmission] = useState<Submission>({ status: 'idle' });
   const request = useRef<AbortController | null>(null);
 
@@ -29,7 +30,10 @@ export function useSubmission(templateId: string, onUnauthorized: () => void) {
     const ownsResponse = () => !controller.signal.aborted && request.current === controller;
     try {
       const task = await createTask(templateId, assetIds, controller.signal);
-      if (ownsResponse()) setSubmission({ status: 'accepted', task });
+      if (ownsResponse()) {
+        onAccepted(task);
+        setSubmission({ status: 'accepted', taskId: task.id });
+      }
     } catch (error) {
       if (!ownsResponse() || isAbort(error)) return;
       if (error instanceof RequestError && error.status === 401) {

@@ -13,15 +13,8 @@ export type UploadSlot = { id: string } & (
   | { status: 'failed'; file: File; preview: string | null; message: string; retryable: boolean }
 );
 
-export type TaskReceipt = {
-  id: string;
-  templateTitle: string;
-  status: 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
-  failure: { message: string } | null;
-};
-
 export type Submission =
   | { status: 'idle' }
   | { status: 'submitting' }
-  | { status: 'accepted'; task: TaskReceipt }
+  | { status: 'accepted'; taskId: string }
   | { status: 'failed'; message: string; uncertain: boolean };

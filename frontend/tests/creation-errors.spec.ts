@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { mountain, openCreation, readyImage } from './helpers';
+import { taskFixture } from './fixtures/tasks';
 
 test('file size and empty content are rejected locally; upload failure can retry', async ({ page }) => {
   await openCreation(page);
@@ -57,15 +58,18 @@ test('uncertain submission retains files and retries only on explicit user actio
   expect(writes).toBe(2);
 });
 
-test('202 failed task is rendered as a failed acceptance snapshot', async ({ page }) => {
+test('202 failed task is registered and displays its scheduling failure in history', async ({ page }) => {
   await openCreation(page);
   await readyImage(page);
-  await page.route('**/api/tasks', (route) => route.fulfill({ status: 202, json: {
-    id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', templateTitle: '山野明信片', status: 'FAILED',
-    failure: { message: '执行队列已满' },
-  } }));
+  const task = taskFixture(300, {
+    status: 'FAILED', version: 1, finishedAt: '2026-11-02T06:01:00Z',
+    failure: { code: 'EXECUTOR_REJECTED', stage: null, message: '执行队列已满' },
+  });
+  await page.route('**/api/tasks', (route) => route.fulfill({ status: 202, json: task }));
   await page.getByRole('button', { name: '开始制作', exact: true }).click();
   const receipt = page.getByRole('region', { name: '提交回执' });
-  await expect(receipt).toContainText('任务已登记，受理时出现失败');
-  await expect(receipt).toContainText('执行队列已满');
+  await expect(receipt).toContainText('任务已登记');
+  const card = page.getByRole('article', { name: `任务 ${task.id}`, exact: true });
+  await expect(card).toContainText('制作失败');
+  await expect(card).toContainText('执行队列已满');
 });

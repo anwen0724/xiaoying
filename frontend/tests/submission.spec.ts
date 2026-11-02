@@ -4,7 +4,7 @@ import path from 'node:path';
 test('real uploads create distinct tasks only through explicit submission', async ({ page }) => {
   const requests: string[] = [];
   page.on('request', (request) => {
-    if (new URL(request.url()).pathname.startsWith('/api/tasks')) requests.push(request.method());
+    if (new URL(request.url()).pathname === '/api/tasks' && request.method() === 'POST') requests.push(request.method());
   });
   await page.goto('/templates/inspiration-grid');
   await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
@@ -16,7 +16,7 @@ test('real uploads create distinct tasks only through explicit submission', asyn
   await page.getByRole('button', { name: '开始制作', exact: true }).click();
   const receipt = page.getByRole('region', { name: '提交回执' });
   await expect(receipt).toBeVisible();
-  await expect(receipt).toContainText('受理时状态');
+  await expect(receipt).toContainText('任务已登记');
   const firstId = await receipt.getByLabel('任务 ID').innerText();
   expect(firstId).toMatch(/^[0-9a-f-]{36}$/);
   await page.getByRole('button', { name: '再次制作', exact: true }).click();

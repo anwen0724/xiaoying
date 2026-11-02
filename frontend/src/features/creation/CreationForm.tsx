@@ -6,6 +6,7 @@ import { UploadField } from './UploadField';
 import { useUploads } from './useUploads';
 import { useSubmission } from './useSubmission';
 import { SubmissionFeedback } from './SubmissionFeedback';
+import { useTasks } from '../tasks/TaskScope';
 import styles from './creation.module.css';
 
 export function CreationForm({ template }: { template: Template }) {
@@ -21,7 +22,8 @@ function ScopedForm({ template, canWrite, onUnauthorized }: {
   onUnauthorized: () => void;
 }) {
   const { slots, choose, remove } = useUploads(template, onUnauthorized);
-  const { submission, submit, clear } = useSubmission(template.id, onUnauthorized);
+  const { accepted } = useTasks();
+  const { submission, submit, clear } = useSubmission(template.id, onUnauthorized, accepted);
   const pending = submission.status === 'submitting';
   const readyCount = slots.filter((slot) => slot.status === 'ready').length;
   const canSubmit = canWrite && !pending && readyCount === template.requiredImageCount;
