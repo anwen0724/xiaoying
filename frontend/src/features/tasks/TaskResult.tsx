@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useIdentity } from '../identity/IdentityProvider';
 import { isAbort, RequestError } from '../../shared/api/http';
 import styles from './tasks.module.css';
@@ -12,6 +12,7 @@ export function TaskResult({ url, title }: { url: string; title: string }) {
   const { expireIdentity } = useIdentity();
   const [preview, setPreview] = useState<Preview>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  const container = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const controller = new AbortController();
     let objectUrl: string | null = null;
@@ -36,16 +37,23 @@ export function TaskResult({ url, title }: { url: string; title: string }) {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [url, attempt, expireIdentity]);
-  if (preview.status === 'loading') return <p role="status">正在加载结果图片…</p>;
-  if (preview.status === 'error') return (
-    <div className={styles.resultError}>
-      <p role="alert">结果图片加载失败，任务仍已成功。</p>
-      <button type="button" onClick={() => {
-        setPreview({ status: 'loading' });
-        setAttempt((value) => value + 1);
-      }}>重新加载图片</button>
+  return (
+    <div ref={container} role="group" aria-label={`${title}结果预览`} tabIndex={-1}>
+      {preview.status === 'loading' && <p role="status">正在加载结果图片…</p>}
+      {preview.status === 'error' && (
+        <div className={styles.resultError}>
+          <p role="alert">结果图片加载失败，任务仍已成功。</p>
+          <button type="button" onClick={() => {
+            container.current?.focus();
+            setPreview({ status: 'loading' });
+            setAttempt((value) => value + 1);
+          }}>重新加载图片</button>
+        </div>
+      )}
+      {preview.status === 'ready' && (
+        <Image className={styles.result} src={preview.url} width={800} height={1000} unoptimized
+          alt={`${title}制作结果`} onError={() => setPreview({ status: 'error' })} />
+      )}
     </div>
   );
-  return <Image className={styles.result} src={preview.url} width={800} height={1000} unoptimized
-    alt={`${title}制作结果`} onError={() => setPreview({ status: 'error' })} />;
 }

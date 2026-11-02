@@ -36,12 +36,12 @@ export async function TemplateDetail({ id }: { id: string }) {
       <TaskScope templateId={template.id}>
         <div className="creation-layout">
           <div className="creation-input">
-            <section className="panel" aria-label="模板说明">
+            <section className={`panel ${styles.summary}`} aria-label="模板说明">
               <Image className={styles.sample} src={template.coverUrl} alt={`${template.title}模拟样例`}
                 width={800} height={1000} unoptimized priority />
               <div className={styles.requirements}>
                 <h2>需要 {template.requiredImageCount} 张图片</h2>
-                <div className={styles.format}>
+                <div className={styles.format} id={`${template.id}-requirements`}>
                   <span>{template.acceptedMimeTypes.map((mime) => mime.replace('image/', '').toUpperCase()).join(' / ')}</span>
                   <span>每张不超过 {template.maxFileSizeBytes / 1024 / 1024} MiB</span>
                 </div>

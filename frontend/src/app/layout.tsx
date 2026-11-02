@@ -31,7 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <IdentityPicker />
             </div>
           </header>
-          <main className="canvas" id="main-content">{children}</main>
+          <main className="canvas" id="main-content" tabIndex={-1}>{children}</main>
         </IdentityProvider>
       </body>
     </html>

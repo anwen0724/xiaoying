@@ -47,6 +47,7 @@ function ScopedForm({ template, canWrite, onUnauthorized }: {
         <div className={styles.slots}>
           {slots.map((slot, index) => (
             <UploadField key={slot.id} slot={slot} position={index + 1}
+              requirementsId={`${template.id}-requirements`}
               accept={template.acceptedMimeTypes.join(',')} disabled={!canWrite || pending}
               onChoose={async (file) => { if (canWrite && clear()) await choose(slot.id, file); }}
               onRemove={() => { if (canWrite && clear()) remove(slot.id); }} />

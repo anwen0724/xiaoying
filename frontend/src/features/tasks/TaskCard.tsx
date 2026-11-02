@@ -11,7 +11,7 @@ export function TaskCard({ entry }: { entry: TaskEntry }) {
         <h3>{task.templateTitle}</h3>
         <span className={styles.status} data-status={task.status}>{statusLabels[task.status]}</span>
       </div>
-      <p>{task.stage ? stageLabels[task.stage] : task.status === 'FAILED' ? '尚未开始执行' : '等待后台开始'}</p>
+      <p className={styles.stage}>{task.stage ? stageLabels[task.stage] : task.status === 'FAILED' ? '尚未开始执行' : '等待后台开始'}</p>
       {task.failure && <p className={styles.error}>{task.failure.message}</p>}
       {task.status === 'SUCCEEDED' && task.resultUrl && <TaskResult key={task.resultUrl} url={task.resultUrl} title={task.templateTitle} />}
       <time dateTime={task.createdAt}>{new Date(task.createdAt).toLocaleString('zh-CN', { hour12: false })}</time>

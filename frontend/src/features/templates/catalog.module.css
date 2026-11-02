@@ -38,6 +38,10 @@
   gap: 8px;
   margin-top: 16px;
 }
+.cardHeader h2 {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
 .card p, .count {
   color: var(--muted);
   margin-top: 5px;
@@ -45,29 +49,45 @@
 .arrow {
   color: var(--muted);
 }
+.summary {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
 .sample {
   width: 100%;
   height: auto;
-  max-height: 410px;
   object-fit: contain;
   border-radius: 8px;
 }
 .requirements {
   display: grid;
   gap: 12px;
-  margin-top: 24px;
+  min-width: 0;
+}
+.requirements h2 {
+  font-size: 16px;
 }
 .requirements p {
   color: var(--muted);
+  font-size: 12px;
 }
 .format {
   display: flex;
-  gap: 16px;
+  gap: 4px;
   flex-wrap: wrap;
   color: var(--muted);
   padding-top: 12px;
   border-top: 1px solid var(--line);
+  font-size: 12px;
 }
 .empty {
   grid-column: 1 / -1;
+}
+@media (max-width: 560px) {
+  .summary {
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: 12px;
+  }
 }

@@ -34,7 +34,7 @@ export async function TemplateCatalog({ category }: { category?: string }) {
               <Image className={styles.cover} src={template.coverUrl} alt="" width={800} height={1000}
                 unoptimized loading={index === 0 ? 'eager' : 'lazy'} />
               <div className={styles.cardHeader}>
-                <h3>{template.title}</h3><span className={styles.arrow} aria-hidden="true">↗</span>
+                <h2>{template.title}</h2><span className={styles.arrow} aria-hidden="true">↗</span>
               </div>
               <p>{template.categoryName} · {template.requiredImageCount} 张图片</p>
             </Link>

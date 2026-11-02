@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useRef } from 'react';
 import type { UploadSlot } from './types';
 import styles from './creation.module.css';
 
@@ -8,12 +9,14 @@ type Props = {
   slot: UploadSlot;
   position: number;
   accept: string;
+  requirementsId: string;
   disabled: boolean;
   onChoose: (file: File) => Promise<void>;
   onRemove: () => void;
 };
 
-export function UploadField({ slot, position, accept, disabled, onChoose, onRemove }: Props) {
+export function UploadField({ slot, position, accept, requirementsId, disabled, onChoose, onRemove }: Props) {
+  const input = useRef<HTMLInputElement>(null);
   const preview = slot.status === 'empty' ? null : slot.preview;
   const errorId = `${slot.id}-error`;
   return (
@@ -34,8 +37,9 @@ export function UploadField({ slot, position, accept, disabled, onChoose, onRemo
           </span>
           <label className={styles.fileLabel}>
             {slot.status === 'empty' ? '选择图片' : '替换图片'}
-            <input type="file" accept={accept} aria-label={`图片 ${position}`}
-              aria-describedby={slot.status === 'failed' ? errorId : undefined}
+            <input ref={input} type="file" accept={accept} aria-label={`图片 ${position}`}
+              aria-invalid={slot.status === 'failed' ? true : undefined}
+              aria-describedby={slot.status === 'failed' ? `${requirementsId} ${errorId}` : requirementsId}
               onChange={async (event) => {
                 const file = event.target.files?.[0];
                 event.target.value = '';
@@ -47,9 +51,15 @@ export function UploadField({ slot, position, accept, disabled, onChoose, onRemo
       {slot.status !== 'empty' && (
         <div className={styles.slotActions}>
           {slot.status === 'failed' && slot.retryable && (
-            <button type="button" onClick={async () => { await onChoose(slot.file); }}>重试上传图片 {position}</button>
+            <button type="button" onClick={async () => {
+              input.current?.focus();
+              await onChoose(slot.file);
+            }}>重试上传图片 {position}</button>
           )}
-          <button type="button" aria-label={`移除图片 ${position}`} onClick={onRemove}>移除</button>
+          <button type="button" aria-label={`移除图片 ${position}`} onClick={() => {
+            input.current?.focus();
+            onRemove();
+          }}>移除</button>
         </div>
       )}
       {slot.status === 'failed' && <p className={styles.error} role="alert" id={errorId}>{slot.message}</p>}

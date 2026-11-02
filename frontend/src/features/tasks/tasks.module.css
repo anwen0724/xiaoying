@@ -24,6 +24,7 @@
   margin-top: 24px;
 }
 .card {
+  align-self: start;
   background: var(--ground);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -32,19 +33,29 @@
 }
 .cardHeading {
   display: flex;
+  align-items: baseline;
   gap: 12px;
   flex-wrap: wrap;
   justify-content: space-between;
   margin-bottom: 16px;
+}
+.cardHeading h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .card p, .card time {
   font-size: 12px;
   color: var(--muted);
   display: block;
   margin-top: 10px;
+  overflow-wrap: anywhere;
 }
 .status {
   font-size: 12px;
+}
+.card .stage {
+  font-size: 14px;
+  color: var(--ink);
 }
 .status[data-status='FAILED'], .card .error, .error {
   color: var(--negative);
@@ -59,6 +70,7 @@
 .notice {
   color: var(--muted);
   margin-top: 24px;
+  overflow-wrap: anywhere;
 }
 .result {
   margin-top: 16px;
