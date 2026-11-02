@@ -6,9 +6,12 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
+  forbidOnly: Boolean(process.env.CI),
   timeout: 30_000,
   expect: { timeout: 10_000 },
-  reporter: 'list',
+  reporter: process.env.CI
+    ? [['list'], ['junit', { outputFile: 'test-results/junit.xml' }]]
+    : 'list',
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://frontend-dev:3000',
     browserName: 'chromium',

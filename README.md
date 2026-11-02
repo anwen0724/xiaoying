@@ -1,10 +1,12 @@
 # 素材制作网站
 
-阶段二至五已完成。后台提供 Java 接口、MySQL 持久化和三阶段任务执行；页面支持模板浏览、演示身份、图片上传、多任务跟踪、个人历史和结果预览。已完成页面可用性与定点视觉检查；CI 与最终交付验收仍在后续阶段。
+阶段二至五已完成，阶段六的 CI 配置与本地容器验证已完成。后台提供 Java 接口、MySQL 持久化和三阶段任务执行；页面支持模板浏览、演示身份、图片上传、多任务跟踪、个人历史和结果预览。GitHub 托管运行未验证，最终交付验收仍属于阶段七。
 
 [阶段四设计](docs/phase-4-design.md) 记录左右分区、个人全部历史、多任务跟踪、查询故障与恢复规则，以及执行证据。
 
 [阶段五设计](docs/phase-5-design.md) 记录上传与恢复焦点、空状态判定、页面加载、三轮固定版式比较和验收；[Taste 评审](docs/phase-5-ui-review.md) 只记录对齐、对比、层级与间距。
+
+[阶段六设计](docs/phase-6-design.md) 记录流水线分工、核心场景覆盖、容器验证和远程运行限制。
 
 首次 Git 提交建立当前交付基线：阶段二、三源码与测试、阶段四设计及题目参考材料。环境文件、依赖目录、构建缓存、运行数据、测试截图和日志不纳入版本控制；`.env.example` 仅含本地演示值。首次提交不代表整道题目已经完成。
 
@@ -177,9 +179,9 @@ docker compose --profile browser run --rm --no-deps browser-test node --test tes
 
 阶段五补充上传要求关联、重试与移除后的焦点、未完成任务恢复期间的空状态，以及小屏多图和长文件名操作。固定视觉场景覆盖 1440／768／390px 的模板库、制作页、个人历史、空历史和读取失败；截图和测量写入被 Git 忽略的 `artifacts/phase-5/`。
 
-上传、创建、多任务执行、跨模板历史和刷新恢复使用真实 Java／MySQL。网络边界替身用于故障、乱序、超过一批和分页边界；受控浏览器时钟用于验证停询。1440、768、390 像素截图输出至 `artifacts/phase-4/`。视觉测试固定两条历史样例以保持截图可读，新增提交仍由 Java 执行。
+上传、创建、多任务执行、跨模板历史和刷新恢复使用真实 Java／MySQL。网络边界替身用于故障、乱序、超过一批和分页边界；受控浏览器时钟用于验证停询。1440、768、390 像素真实提交截图输出至 `artifacts/phase-5/live/`。该视觉测试固定两条历史样例以保持截图可读，新增提交仍由 Java 执行。
 
-测试开发服务使用 Webpack 文件轮询来适配 Windows 目录挂载。浏览器镜像与测试库版本一致，镜像自带的 Node／npm 仅运行测试，不作为应用版本基线。CI 仍留在阶段六。
+测试开发服务使用 Webpack 文件轮询来适配 Windows 目录挂载。浏览器镜像与测试库版本一致，镜像自带的 Node／npm 仅运行测试，不作为应用版本基线。
 
 结束后清理隔离浏览器服务及临时数据：
 
@@ -189,6 +191,22 @@ docker compose --profile browser rm -f frontend-dev backend-browser mysql-browse
 ```
 
 本次 `npm audit --omit=dev` 为 0 项；完整 audit 报告 16 项中危项，来自开发工具链的 minimatch 依赖及其影响链。ESLint 9.39.5 还报告停止维护提示。当前保留已确认的直接版本；后续升级时需要复验 ESLint 与 Next.js 插件兼容性。
+
+## 持续集成
+
+[CI 工作流](.github/workflows/ci.yml) 在 push、pull request 时运行，也支持 Actions 页手动触发。两个作业分别执行 Java 测试与构建、前端检查与浏览器回归。所有项目安装、构建、测试和运行均在容器内完成；不需要仓库 Secret 或外部服务账号。
+
+Java 作业执行 Maven verify，并连接临时 MySQL。前端作业先执行 npm ci、lint、类型检查和生产构建，再构建 Java 镜像，启动隔离浏览器服务，依次执行 Playwright、HTTP 渲染和 smoke。检查失败会使作业失败；浏览器测试不自动重试，也不接受 test.only。报告和服务日志保留 7 天，成功或失败后均安排清理临时服务与卷。
+
+工作流使用独立 Compose 项目 `xiaoying-ci`。在本地复现时，可按工作流顺序执行其 Docker 命令，并为每条 Compose 命令增加 `-p xiaoying-ci`。先停止使用本工作区依赖的 `frontend-dev`，再运行 npm ci；不要同时运行两个浏览器测试进程。完成后，仅清理该隔离项目：
+
+```sh
+docker compose -p xiaoying-ci --profile test --profile browser down --volumes --remove-orphans
+```
+
+本地已通过 actionlint、Compose 检查、16 项 Java 测试、43 项浏览器测试、1 项 HTTP 渲染测试、smoke 及前后端构建，并核对 smoke 任务的 MySQL 记录。失败退出、JUnit 报告和隔离环境清理也已验证。
+
+当前未配置远程仓库。GitHub 托管 runner 的事件触发、检出和报告上传未验证；本地容器结果不能记为 GitHub Actions 已通过。阶段六的实际检查结果见[验证记录](docs/phase-6-design.md#6-验证记录)。
 
 ## 更新与回滚
 
@@ -205,7 +223,7 @@ docker compose --profile test run --rm --no-deps frontend-check node ../scripts/
 
 ## 完成范围与限制
 
-阶段二基础服务、阶段三制作入口、阶段四多任务跟踪与历史、阶段五页面可用性与定点 UI 优化已实现。验证及取舍分别见对应阶段设计。阶段六 CI 和阶段七最终交付验收仍待完成，详见[任务清单](docs/requirements-and-task-list.md)。
+阶段二基础服务、阶段三制作入口、阶段四多任务跟踪与历史、阶段五页面可用性与定点 UI 优化已实现。阶段六已交付 CI 配置并完成本地容器验证，GitHub 托管运行尚未验证。阶段七最终交付验收待完成，详见[任务清单](docs/requirements-and-task-list.md)。
 
 当前只运行一个 Java 实例。会话和执行器队列在内存中；重启后会话失效，原有非终态任务不会恢复执行。历史及已有文件保留。未实现提交幂等、自动重试、任务取消、素材清理、账号注册或真实图片合成。文件与 MySQL 没有分布式事务，进程崩溃可能留下未引用文件。
 

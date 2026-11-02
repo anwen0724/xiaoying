@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  COMPOSE_PROJECT_NAME: xiaoying-ci
+
+jobs:
+  backend:
+    name: Java tests and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Validate Compose
+        run: |
+          mkdir -p artifacts/ci/backend
+          docker compose --profile test config --quiet
+      - name: Test and build Java
+        run: docker compose --profile test run --rm backend-test 2>&1 | tee artifacts/ci/backend/verify.log
+      - name: Collect service logs
+        if: always()
+        run: |
+          mkdir -p artifacts/ci/backend
+          docker compose --profile test logs --no-color > artifacts/ci/backend/services.log
+      - name: Upload backend reports
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: backend-reports
+          retention-days: 7
+          path: |
+            backend/target/surefire-reports/
+            artifacts/ci/backend/
+      - name: Clean up test services
+        if: always()
+        run: docker compose --profile test down --volumes --remove-orphans
+
+  frontend:
+    name: Frontend checks and browser tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Validate Compose
+        run: |
+          mkdir -p artifacts/ci/frontend
+          docker compose --profile test --profile browser config --quiet
+      - name: Install, lint, typecheck and build frontend
+        run: docker compose --profile test run --rm --no-deps frontend-check 2>&1 | tee artifacts/ci/frontend/check.log
+      - name: Build browser backend
+        run: docker build -t xiaoying-backend:latest -f backend/Dockerfile . 2>&1 | tee artifacts/ci/frontend/backend-image.log
+      - name: Start isolated browser services
+        run: docker compose --profile browser up -d --wait --wait-timeout 180 frontend-dev
+      - name: Browser regression
+        run: docker compose --profile browser run --rm -e CI=true -e UI_REVIEW_VERSION=ci browser-test 2>&1 | tee artifacts/ci/frontend/browser.log
+      - name: HTTP rendering
+        run: docker compose --profile browser run --rm --no-deps browser-test node --test tests/catalog-http.test.mjs 2>&1 | tee artifacts/ci/frontend/http.log
+      - name: HTTP business scenarios
+        run: docker compose --profile test run --rm --no-deps -e SMOKE_BASE_URL=http://frontend-dev:3000 frontend-check node ../scripts/smoke.mjs 2>&1 | tee artifacts/ci/frontend/smoke.log
+      - name: Collect service logs
+        if: always()
+        run: |
+          mkdir -p artifacts/ci/frontend
+          docker compose --profile browser logs --no-color > artifacts/ci/frontend/services.log
+      - name: Upload frontend reports
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: frontend-reports
+          retention-days: 7
+          path: |
+            artifacts/ci/frontend/
+            artifacts/smoke.json
+            artifacts/phase-5/ci/
+            artifacts/phase-5/live/
+            frontend/test-results/
+      - name: Clean up test services
+        if: always()
+        run: docker compose --profile test --profile browser down --volumes --remove-orphans
