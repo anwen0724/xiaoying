@@ -20,6 +20,8 @@ docker compose up -d --build --wait
 
 打开 <http://localhost:3000>。前端发布 3000 端口；Java 8080 和 MySQL 3306 仅在 Compose 网络内开放。Next.js 将 `/api/*`、`/demo/*` 转发到 Java，不执行制作任务。
 
+端口被占用时，在 `.env` 中设置 `FRONTEND_PORT` 后启动；例如 3001 对应 `http://localhost:3001`。
+
 第一次启动会执行 `database/init/001-schema.sql` 和 `002-demo-users.sql`。Java 随后导入缺少的模板并检查预置文件。重复启动不会覆盖已有模板。MySQL 数据保存在 `mysql-data`，上传及结果保存在 `file-data`。
 
 查看与停止：
@@ -73,6 +75,7 @@ Compose 提供本地演示默认值，无需真实凭据。需要修改时，将
 
 | 配置 | 默认值／说明 |
 | --- | --- |
+| `FRONTEND_PORT` | `3000`，宿主机前端入口端口 |
 | `DB_PASSWORD` | `local-demo-password`，应用数据库账号密码 |
 | `MYSQL_ROOT_PASSWORD` | `local-demo-root`，仅用于数据库初始化 |
 | `DEMO_MODE` | `true`，启用演示身份与按任务指定的模拟参数 |
@@ -220,6 +223,32 @@ docker compose -p xiaoying-ci --profile test --profile browser down --volumes --
 docker compose up -d --force-recreate --wait mysql backend frontend
 docker compose --profile test run --rm --no-deps frontend-check node ../scripts/smoke.mjs --verify-persistence
 ```
+
+## 独立交付验收
+
+正式构建验收入口为 `frontend/playwright.acceptance.config.ts`。它使用真实 Java／MySQL，要求初始任务为空，会创建演示任务；应在源码副本与新数据卷中运行。不要指向已有业务环境。
+
+在新解压的源码目录中，将 `.env.example` 复制为 `.env`，把 `FRONTEND_PORT` 改为未占用端口（例如 3001），然后执行：
+
+```sh
+docker compose -p xiaoying-acceptance build --no-cache
+docker compose -p xiaoying-acceptance up -d --wait
+docker compose -p xiaoying-acceptance --profile test run --rm --no-deps frontend-check npm ci
+docker compose -p xiaoying-acceptance --profile browser run --rm --no-deps -e PLAYWRIGHT_BASE_URL=http://frontend:3000 browser-test npm test -- --config playwright.acceptance.config.ts
+docker compose -p xiaoying-acceptance --profile test run --rm --no-deps frontend-check node ../scripts/smoke.mjs
+docker compose -p xiaoying-acceptance up -d --force-recreate --wait
+docker compose -p xiaoying-acceptance --profile test run --rm --no-deps frontend-check node ../scripts/smoke.mjs --verify-persistence
+```
+
+命令不启动 frontend-dev。正式页面验证分类、1／2／3 图提交、三阶段失败、多任务、刷新和用户隔离。证据写入 `artifacts/phase-7/` 和 `artifacts/smoke.json`。基础镜像和依赖下载缓存可复用；`--no-cache` 不复用应用构建层。
+
+保存验收证据后，可删除本次独立环境的数据卷：
+
+```sh
+docker compose -p xiaoying-acceptance --profile test --profile browser down --volumes --remove-orphans
+```
+
+该清理命令只用于独立验收项目，不用于保留演示数据的默认项目。
 
 ## 完成范围与限制
 
