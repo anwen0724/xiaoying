@@ -1,0 +1,172 @@
+name: xiaoying
+services:
+  mysql:
+    image: mysql:8.4.13
+    environment:
+      MYSQL_DATABASE: xiaoying
+      MYSQL_USER: xiaoying
+      MYSQL_PASSWORD: ${DB_PASSWORD:-local-demo-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-demo-root}
+      TZ: UTC
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [CMD-SHELL, 'mysqladmin ping -h localhost -uroot -p"$$MYSQL_ROOT_PASSWORD" --silent']
+      interval: 3s
+      timeout: 3s
+      retries: 40
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/xiaoying?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: xiaoying
+      DB_PASSWORD: ${DB_PASSWORD:-local-demo-password}
+      STORAGE_ROOT: /app/data
+      DEMO_MODE: ${DEMO_MODE:-true}
+      TASK_WORKERS: ${TASK_WORKERS:-2}
+      TASK_QUEUE_CAPACITY: ${TASK_QUEUE_CAPACITY:-32}
+      SIMULATION_STEP_DELAY_MS: ${SIMULATION_STEP_DELAY_MS:-3000}
+    volumes:
+      - file-data:/app/data
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/api/health]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      backend:
+        condition: service_healthy
+  mysql-test:
+    image: mysql:8.4.13
+    profiles: [test]
+    environment:
+      MYSQL_DATABASE: xiaoying
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test-only
+      MYSQL_ROOT_PASSWORD: test-root-only
+      TZ: UTC
+    tmpfs:
+      - /var/lib/mysql
+    volumes:
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [CMD-SHELL, 'mysqladmin ping -h localhost -uroot -p"$$MYSQL_ROOT_PASSWORD" --silent']
+      interval: 2s
+      timeout: 3s
+      retries: 40
+  backend-test:
+    image: eclipse-temurin:21-jdk-alpine
+    profiles: [test]
+    working_dir: /workspace/backend
+    command: [sh, ./mvnw, -B, verify]
+    environment:
+      DB_URL: jdbc:mysql://mysql-test:3306/xiaoying?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: test
+      DB_PASSWORD: test-only
+      STORAGE_ROOT: /tmp/xiaoying-test-files
+      DEMO_MODE: 'true'
+      SIMULATION_STEP_DELAY_MS: '0'
+    volumes:
+      - .:/workspace
+      - maven-cache:/root/.m2
+    depends_on:
+      mysql-test:
+        condition: service_healthy
+  frontend-check:
+    image: node:24.14.0-alpine
+    profiles: [test]
+    working_dir: /workspace/frontend
+    command: [sh, -c, 'npm ci && npm run lint && npm run typecheck && npm run build']
+    volumes:
+      - .:/workspace
+      - npm-cache:/root/.npm
+  mysql-browser:
+    image: mysql:8.4.13
+    profiles: [browser]
+    environment:
+      MYSQL_DATABASE: xiaoying
+      MYSQL_USER: test
+      MYSQL_PASSWORD: browser-only
+      MYSQL_ROOT_PASSWORD: browser-root-only
+      TZ: UTC
+    tmpfs:
+      - /var/lib/mysql
+    volumes:
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [CMD-SHELL, 'mysqladmin ping -h localhost -uroot -p"$$MYSQL_ROOT_PASSWORD" --silent']
+      interval: 2s
+      timeout: 3s
+      retries: 40
+  backend-browser:
+    image: xiaoying-backend:latest
+    profiles: [browser]
+    environment:
+      DB_URL: jdbc:mysql://mysql-browser:3306/xiaoying?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: test
+      DB_PASSWORD: browser-only
+      STORAGE_ROOT: /tmp/browser-files
+      DEMO_MODE: 'true'
+      SIMULATION_STEP_DELAY_MS: '50'
+    tmpfs:
+      - /tmp
+    depends_on:
+      mysql-browser:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/api/health]
+      interval: 2s
+      timeout: 3s
+      retries: 40
+  frontend-dev:
+    image: node:24.14.0-alpine
+    profiles: [browser]
+    working_dir: /workspace/frontend
+    command: [npm, run, dev, --, --webpack]
+    environment:
+      JAVA_API_ORIGIN: http://backend-browser:8080
+      NEXT_TELEMETRY_DISABLED: '1'
+      WATCHPACK_POLLING: 'true'
+    volumes:
+      - .:/workspace
+      - frontend-dev-cache:/workspace/frontend/.next
+    depends_on:
+      backend-browser:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 3s
+      retries: 40
+  browser-test:
+    image: mcr.microsoft.com/playwright:v1.64.1-noble
+    profiles: [browser]
+    init: true
+    shm_size: 1gb
+    working_dir: /workspace/frontend
+    command: [npm, test]
+    environment:
+      PLAYWRIGHT_BASE_URL: http://frontend-dev:3000
+    volumes:
+      - .:/workspace
+    depends_on:
+      frontend-dev:
+        condition: service_healthy
+volumes:
+  mysql-data:
+  file-data:
+  maven-cache:
+  npm-cache:
+  frontend-dev-cache:

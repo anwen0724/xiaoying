@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000" role="img" aria-label="海边双拼">
+  <title>海边双拼</title>
+  <rect width="800" height="1000" fill="#DFEBEC"/>
+  <text x="60" y="82" fill="#24322F" font-family="sans-serif" font-size="26" letter-spacing="2">TWO DAYS BY THE SEA</text>
+  <path d="M 60 112 H 740" stroke="#24322F" stroke-width="2"/>
+    <svg x="60" y="160" width="332" height="650" viewBox="0 0 332 650">
+      <rect width="332" height="650" fill="#F6F3ED"/>
+      <circle cx="166" cy="190" r="60" fill="#E7B86B"/>
+      <path d="M 0 480 L 126 300 L 332 510 L 332 650 L 0 650 Z" fill="#326575"/>
+      <path d="M 0 560 Q 166 430 332 555 L 332 650 L 0 650 Z" fill="#213D3A" opacity="0.65"/>
+    </svg>
+    <svg x="408" y="160" width="332" height="650" viewBox="0 0 332 650">
+      <rect width="332" height="650" fill="#F6F3ED"/>
+      <circle cx="166" cy="190" r="60" fill="#E7B86B"/>
+      <path d="M 0 480 L 126 300 L 332 510 L 332 650 L 0 650 Z" fill="#326575"/>
+      <path d="M 0 560 Q 166 430 332 555 L 332 650 L 0 650 Z" fill="#213D3A" opacity="0.65"/>
+    </svg>
+  <text x="60" y="884" fill="#24322F" font-family="sans-serif" font-size="22">02 / 2 IMAGE STUDY</text>
+  <text x="60" y="932" fill="#51605B" font-family="sans-serif" font-size="16">LOCAL TEMPLATE / ORIGINAL GEOMETRY</text>
+</svg>

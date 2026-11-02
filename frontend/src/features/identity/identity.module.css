@@ -1,0 +1,28 @@
+.identity {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  max-width: 100%;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.controls label, .status {
+  color: var(--muted);
+  font-size: 12px;
+}
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 560px) {
+  .identity {
+    width: 100%;
+    justify-items: start;
+  }
+}

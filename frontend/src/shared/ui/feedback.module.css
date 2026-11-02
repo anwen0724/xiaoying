@@ -1,0 +1,11 @@
+.feedback {
+  padding: 24px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+.feedback p {
+  color: var(--muted);
+}

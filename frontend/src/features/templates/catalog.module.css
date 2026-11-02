@@ -1,0 +1,73 @@
+.filters {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+}
+.filters a {
+  white-space: nowrap;
+  padding: 10px 0 14px;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+}
+.filters a[aria-current="page"] {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+.card {
+  display: block;
+  border-radius: var(--radius);
+}
+.cover {
+  border-radius: var(--radius);
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--surface);
+}
+.card:hover .cover {
+  outline: 1px solid var(--control);
+  outline-offset: 3px;
+}
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.card p, .count {
+  color: var(--muted);
+  margin-top: 5px;
+}
+.arrow {
+  color: var(--muted);
+}
+.sample {
+  width: 100%;
+  height: auto;
+  max-height: 410px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.requirements {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+.requirements p {
+  color: var(--muted);
+}
+.format {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.empty {
+  grid-column: 1 / -1;
+}

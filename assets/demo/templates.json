@@ -1,0 +1,66 @@
+[
+  {
+    "id": "mountain-card",
+    "title": "山野明信片",
+    "category": "travel",
+    "categoryName": "旅行记忆",
+    "description": "上传一张图片，模拟制作一张山野主题明信片。",
+    "coverPath": "covers/mountain-card.svg",
+    "requiredImageCount": 1,
+    "acceptedMimeTypes": [
+      "image/jpeg",
+      "image/png"
+    ],
+    "maxFileSizeBytes": 5242880,
+    "resultPresetPath": "results/mountain-card.svg",
+    "sortOrder": 1
+  },
+  {
+    "id": "travel-duo",
+    "title": "海边双拼",
+    "category": "travel",
+    "categoryName": "旅行记忆",
+    "description": "上传两张图片，模拟制作一张双图旅行卡片。",
+    "coverPath": "covers/travel-duo.svg",
+    "requiredImageCount": 2,
+    "acceptedMimeTypes": [
+      "image/jpeg",
+      "image/png"
+    ],
+    "maxFileSizeBytes": 5242880,
+    "resultPresetPath": "results/travel-duo.svg",
+    "sortOrder": 2
+  },
+  {
+    "id": "minimal-cover",
+    "title": "极简封面",
+    "category": "design",
+    "categoryName": "创意设计",
+    "description": "上传一张图片，模拟制作一张几何风格封面。",
+    "coverPath": "covers/minimal-cover.svg",
+    "requiredImageCount": 1,
+    "acceptedMimeTypes": [
+      "image/jpeg",
+      "image/png"
+    ],
+    "maxFileSizeBytes": 5242880,
+    "resultPresetPath": "results/minimal-cover.svg",
+    "sortOrder": 3
+  },
+  {
+    "id": "inspiration-grid",
+    "title": "三格灵感板",
+    "category": "design",
+    "categoryName": "创意设计",
+    "description": "上传三张图片，模拟制作一张三格灵感板。",
+    "coverPath": "covers/inspiration-grid.svg",
+    "requiredImageCount": 3,
+    "acceptedMimeTypes": [
+      "image/jpeg",
+      "image/png"
+    ],
+    "maxFileSizeBytes": 5242880,
+    "resultPresetPath": "results/inspiration-grid.svg",
+    "sortOrder": 4
+  }
+]

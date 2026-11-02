@@ -1,0 +1,209 @@
+# 素材制作网站
+
+已实现阶段二、三：Java 业务接口、MySQL 持久化、三阶段后台任务，以及模板浏览、演示身份、图片上传和提交回执页面。多任务轮询、历史与结果展示留在阶段四，CI 留在阶段六。
+
+[阶段四设计](docs/phase-4-design.md) 已对照原题与需求文档完成，包含左右分区、个人全部历史、多任务跟踪及恢复规则。当前仅完成设计，运行中的页面仍为阶段三版本。
+
+首次 Git 提交建立当前交付基线：阶段二、三源码与测试、阶段四设计及题目参考材料。环境文件、依赖目录、构建缓存、运行数据、测试截图和日志不纳入版本控制；`.env.example` 仅含本地演示值。首次提交不代表整道题目已经完成。
+
+## 启动
+
+需要可用的 Docker Engine 和 Docker Compose。在仓库根目录执行：
+
+```sh
+docker compose up -d --build --wait
+```
+
+打开 <http://localhost:3000>。前端发布 3000 端口；Java 8080 和 MySQL 3306 仅在 Compose 网络内开放。Next.js 将 `/api/*`、`/demo/*` 转发到 Java，不执行制作任务。
+
+第一次启动会执行 `database/init/001-schema.sql` 和 `002-demo-users.sql`。Java 随后导入缺少的模板并检查预置文件。重复启动不会覆盖已有模板。MySQL 数据保存在 `mysql-data`，上传及结果保存在 `file-data`。
+
+查看与停止：
+
+```sh
+docker compose ps
+docker compose logs --tail 100 backend frontend
+docker compose down
+```
+
+`down` 保留数据卷。不要用 `down -v` 作为更新步骤，该参数会删除持久化数据。
+
+## 技术与结构
+
+| 部分 | 版本 |
+| --- | --- |
+| Java／Maven Wrapper | 21／3.9.14；本次容器实际 Java 21.0.13 |
+| Spring Boot／MyBatis-Plus | 3.5.16／3.5.9，Boot 3 Starter |
+| MySQL | 8.4.13 |
+| Node.js／npm | 24.14.0／11.9.0 |
+| Next.js／React | 16.4.3／19.3.1 |
+| TypeScript／ESLint | 5.9.3／9.39.5 |
+| Playwright 测试库／浏览器镜像 | 1.64.1／v1.64.1-noble |
+
+前端精确依赖由 `frontend/package-lock.json` 固定。后端由 POM、Boot 依赖管理和 Wrapper 固定版本。镜像 digest 与验收证据见[阶段二设计](docs/phase-2-design.md)。
+
+```text
+frontend/                  Next.js App Router、业务页面、同源转发
+  src/app/                 模板库、模板详情、加载及错误入口
+  src/features/            templates、identity、creation
+  src/shared/              HTTP 边界解析与共享错误组件
+  tests/                   浏览器行为与 HTTP 渲染验证
+backend/                   Java 工程，Service 接口与实现分离
+  src/main/java/com/anwen/xiaoying/
+    identity/              演示身份与会话
+    template/              模板、分类与种子
+    asset/                 上传、图片校验与私有文件
+    task/                  受理、执行、查询与状态事务
+    common/                错误响应与共享校验
+    config/                线程池、配置与 JSON 协议
+database/init/             六表结构与用户种子
+assets/demo/               四个模板、预置 SVG 和上传样例
+scripts/smoke.mjs          容器内 HTTP 场景验证
+docs/                      持续维护的设计、库表、接口和任务清单
+```
+
+## 配置
+
+Compose 提供本地演示默认值，无需真实凭据。需要修改时，将 `.env.example` 复制为 `.env`；不要将 `.env` 加入 Git。
+
+| 配置 | 默认值／说明 |
+| --- | --- |
+| `DB_PASSWORD` | `local-demo-password`，应用数据库账号密码 |
+| `MYSQL_ROOT_PASSWORD` | `local-demo-root`，仅用于数据库初始化 |
+| `DEMO_MODE` | `true`，启用演示身份与按任务指定的模拟参数 |
+| `TASK_WORKERS` | `2`，正整数 |
+| `TASK_QUEUE_CAPACITY` | `32`，正整数，不包含正在执行的任务 |
+| `SIMULATION_STEP_DELAY_MS` | `3000`，每阶段毫秒数，范围 0–30000 |
+| `DB_URL`／`DB_USERNAME` | Compose 配置为 MySQL 服务地址和 `xiaoying` 账号 |
+| `STORAGE_ROOT` | Compose 配置为 `/app/data` |
+| `JAVA_API_ORIGIN` | Next.js 构建环境读取；默认 `http://backend:8080` |
+
+修改 Next.js 转发目标需要设置构建环境并重新构建，单独修改运行容器的变量不会更新已有 rewrites。现有 Compose 固定使用默认服务名。
+
+MySQL 的账号初始化变量仅在空数据卷生效。已有库修改密码时，应同步修改数据库账号，不能只改 `.env`。
+
+## 身份、接口与后台任务
+
+`demo-alice`（小禾）与 `demo-bob`（阿远）通过 `POST /api/session` 选择身份。Java 使用有效期为 30 分钟的空闲会话，Cookie 为 HttpOnly、SameSite=Lax、Path=/。选择另一个身份会废弃旧会话。素材及任务所有者由服务端会话确定；不可见记录统一返回 404。
+
+所有请求响应、校验规则和错误码见[接口文档](docs/api.md)，字段和约束见[库表设计](docs/database-design.md)。主要路径为：
+
+| 路径 | 用途 |
+| --- | --- |
+| `/api/health`、`/api/demo-users`、`/api/session` | 就绪检查与身份 |
+| `/api/categories`、`/api/templates` | 分类及模板要求 |
+| `POST /api/assets` | 上传一张 JPEG／PNG，检查真实内容与大小 |
+| `POST /api/tasks` | 受理并返回 202、任务 ID 和 Location |
+| `/api/tasks/{id}`、`/api/tasks` | 任务详情、按模板筛选的个人历史 |
+| `/api/tasks/active`、`/api/tasks/status` | 全部未完成任务、指定 ID 的最新状态 |
+| `/api/tasks/{id}/result` | 本人成功任务的 SVG 结果 |
+
+任务按 `MATERIAL_CHECK → MOCK_GENERATION → RESULT_FINALIZATION` 执行，状态为 `QUEUED → RUNNING → SUCCEEDED/FAILED`。两个工作线程并行执行，其他任务排队；队列满时将新登记任务记录为调度失败。HTTP 请求线程不执行制作。
+
+每个阶段等待配置的耗时。素材检查再次验证输入；模拟生成读取预置 SVG；结果整理将结果副本保存至私有目录。阶段失败后，后续步骤标记为 SKIPPED。短事务一起更新任务和步骤，递增 version。查询不推进执行，终态不因结果文件读取失败而回退。
+
+### 演示方法
+
+浏览器打开首页，先选择页顶的演示身份，再选择一个模板。按要求上传 1／2／3 张图片，点击“开始制作”。可以使用 `assets/demo/inputs/` 中的样例。
+
+上传位支持预览、替换、移除和失败重试。提交后展示任务 ID 与受理时状态，点击“再次制作”可用当前素材创建另一个任务。回执不会自动更新，不能用它判断任务当前状态。网络异常或回执无法解析时，页面说明任务可能已创建，不自动重发。
+
+切换用户、退出身份或离开模板页会清空当前表单；再次进入需要重新上传。身份会话可以在刷新后恢复，素材与回执不做浏览器持久化。后续任务恢复属于阶段四。
+
+接口文档第 8 节提供 PowerShell 请求示例。容器内可执行完整示例：
+
+```sh
+docker compose --profile test run --rm --no-deps frontend-check node ../scripts/smoke.mjs
+```
+
+该脚本创建三个耗时任务和一个指定阶段失败的任务。它验证上传、两线程并发、排队、退出会话后继续执行、用户隔离和结果读取。脚本会向演示账号新增记录，并写入被 Git 忽略的 `artifacts/smoke.json`。
+
+手动创建任务时，可省略 simulation 使用默认配置，也可传入：
+
+```json
+{
+  "templateId": "mountain-card",
+  "assetIds": ["替换为上传接口返回的素材 ID"],
+  "simulation": {
+    "stepDelayMs": 3000,
+    "failAtStage": "MOCK_GENERATION"
+  }
+}
+```
+
+成功演示将 failAtStage 改为 null。分别传入三个阶段名可复现不同失败点。延长 stepDelayMs 后连续创建三个任务，可观察两个执行、一个等待。退出会话后重新选择原用户，再查询历史即可看到后台结果。
+
+前端刷新后的任务恢复与轮询页面尚未实现。后端已提供当前会话、历史、active 和包含终态的 status 接口，供阶段四接入。
+
+## 构建与测试
+
+安装、构建、测试和应用执行都在容器内完成：
+
+```sh
+docker compose --profile test run --rm backend-test
+docker compose --profile test run --rm --no-deps frontend-check
+docker compose build
+```
+
+`backend-test` 使用独立 MySQL 服务 `mysql-test`，其数据目录是 tmpfs，不连接业务库。测试保留真实 Mapper、事务和执行逻辑，只在时间边界使用事件闸门或固定时钟。后端目前 16 项测试，覆盖成功、三个失败点、队列溢出、归属、同时间分页、JSON 校验、数据库约束及结果文件缺失。
+
+结束后清理测试数据库容器：
+
+```sh
+docker compose --profile test stop mysql-test
+docker compose --profile test rm -f mysql-test
+```
+
+不要在同一个测试数据库上并行启动多个测试进程。前端检查执行 npm ci、ESLint、TypeScript 和 Next.js 生产构建。运行该检查前先停止 `frontend-dev`，避免 npm ci 删除开发服务正在使用的依赖。
+
+阶段三新增 17 项 Playwright 浏览器测试及 1 项 HTTP 渲染测试。先完成上述前端依赖安装，并构建后端镜像，再执行：
+
+```sh
+docker compose build backend
+docker compose --profile browser run --rm browser-test
+docker compose --profile browser run --rm --no-deps browser-test node --test tests/catalog-http.test.mjs
+```
+
+浏览器流程连接隔离的 `backend-browser` 与 `mysql-browser`，数据库和上传目录均使用 tmpfs，不写入演示库。测试覆盖 1／2／3 张素材、受理回执、重复提交保护、迟到响应、身份切换与过期、文件校验、失败重试和提交不确定状态。网络替身只用于制造延迟与错误；主要流程使用真实 Java／MySQL。1440、768、390 像素截图输出至 `artifacts/phase-3/`。
+
+测试开发服务使用 Webpack 文件轮询来适配 Windows 目录挂载。浏览器镜像与测试库版本一致，镜像自带的 Node／npm 仅运行测试，不作为应用版本基线。CI 仍留在阶段六。
+
+结束后清理隔离浏览器服务及临时数据：
+
+```sh
+docker compose --profile browser stop frontend-dev backend-browser mysql-browser
+docker compose --profile browser rm -f frontend-dev backend-browser mysql-browser
+```
+
+本次 `npm audit --omit=dev` 为 0 项；完整 audit 报告 16 项中危项，来自开发工具链的 minimatch 依赖及其影响链。ESLint 9.39.5 还报告停止维护提示。当前保留已确认的直接版本；后续升级时需要复验 ESLint 与 Next.js 插件兼容性。
+
+## 更新与回滚
+
+本次只有首次初始化脚本，没有增量结构变更。部署新代码前保存当前源码版本和镜像标识，再执行 `docker compose up -d --build --wait`。数据卷持续复用。
+
+没有库表变更时，回到已验证的源码版本并重新构建，即可回滚应用。存在结构变更时，先依据 `database/migrations/` 中对应脚本评估数据兼容和逆向迁移，再回滚代码；不能用删除数据卷代替回滚。
+
+验证容器重建后的持久化：先执行 smoke 脚本，再执行以下命令。该过程会结束会话，应避开正在执行的任务。
+
+```sh
+docker compose up -d --force-recreate --wait mysql backend frontend
+docker compose --profile test run --rm --no-deps frontend-check node ../scripts/smoke.mjs --verify-persistence
+```
+
+## 完成范围与限制
+
+阶段二基础服务与阶段三制作入口已实现。阶段三验证及设计取舍见[阶段三设计](docs/phase-3-design.md)。前端多任务跟踪、轮询、历史与结果展示、完整视觉打磨、CI 和最终交付验收仍待完成，详见[任务清单](docs/requirements-and-task-list.md)。
+
+当前只运行一个 Java 实例。会话和执行器队列在内存中；重启后会话失效，原有非终态任务不会恢复执行。历史及已有文件保留。未实现提交幂等、自动重试、任务取消、素材清理、账号注册或真实图片合成。文件与 MySQL 没有分布式事务，进程崩溃可能留下未引用文件。
+
+演示身份适用于本题演示；`DEMO_MODE=false` 会关闭身份选择和模拟参数入口，项目不提供另一套登录流程。
+
+## 来源、AI 工作流与投入
+
+后端基于用户提供的 `C:\all\work\study\initialized-backend`。复用 Maven Wrapper、POM 构建组织与异常处理思路，改为本项目包名、依赖、配置和响应契约；原目录未修改。来源没有 commit，因此不填来源版本号。没有复制本地凭据、IDE 文件或原构建产物。
+
+四个模板及 SVG 由本项目构造，上传样例见 `assets/demo/README.md`。页面沿用题目截图的暗色画廊与绿色主操作方向，阶段三先交付可操作布局，完整视觉打磨留在阶段五。
+
+使用 Codex 辅助开发。先从题目拆阶段，由用户确定身份、线程数、模板复用和编码规则，再维护设计、库表及接口三份文档。实现时按行为编写失败测试，再增加业务代码，在真实 MySQL 和容器中验证。例如，会话测试先暴露中文种子编码错误，修复 SQL 会话字符集后通过；请求类型测试发现数字被转换成字符串，修复 Jackson 转换规则后通过。验收结果同步至文档。
+
+阶段二执行时间与证据记录在阶段二设计第 11 节。人工投入未单独计时，不将自动执行跨度写成人工工时。

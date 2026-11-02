@@ -1,0 +1,17 @@
+.git
+.idea
+.env
+.env.*
+!.env.example
+**/node_modules
+**/.next
+**/*.tsbuildinfo
+frontend/next-env.d.ts
+**/target
+artifacts
+artifacts-*
+*.log
+.taste-skill
+frontend/test-results
+frontend/playwright-report
+data
