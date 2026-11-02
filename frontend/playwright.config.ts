@@ -8,7 +8,7 @@ export default defineConfig({
   retries: 0,
   forbidOnly: Boolean(process.env.CI),
   timeout: 30_000,
-  expect: { timeout: 10_000 },
+  expect: { timeout: Number(process.env.PLAYWRIGHT_EXPECT_TIMEOUT_MS ?? 10_000) },
   reporter: process.env.CI
     ? [['list'], ['junit', { outputFile: 'test-results/junit.xml' }]]
     : 'list',

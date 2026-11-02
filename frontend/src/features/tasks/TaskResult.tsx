@@ -38,7 +38,7 @@ export function TaskResult({ url, title }: { url: string; title: string }) {
     };
   }, [url, attempt, expireIdentity]);
   return (
-    <div ref={container} role="group" aria-label={`${title}结果预览`} tabIndex={-1}>
+    <div className={styles.previewFrame} ref={container} role="group" aria-label={`${title}结果预览`} tabIndex={-1}>
       {preview.status === 'loading' && <p role="status">正在加载结果图片…</p>}
       {preview.status === 'error' && (
         <div className={styles.resultError}>

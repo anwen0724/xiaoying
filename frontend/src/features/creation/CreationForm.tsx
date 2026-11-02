@@ -31,12 +31,12 @@ function ScopedForm({ template, canWrite, onUnauthorized }: {
     : submission.status === 'accepted' ? '再次制作'
     : submission.status === 'failed' && submission.uncertain ? '再次创建（可能重复）' : '开始制作';
   return (
-    <section className="panel" aria-label="制作区域">
+    <section className={styles.form} aria-label="制作区域">
       <div className={styles.formHeading}>
         <h2>上传图片</h2>
         <span>{readyCount} / {template.requiredImageCount} 已准备</span>
       </div>
-      <p className={styles.description}>图片顺序对应模板中的位置，可在提交前替换。</p>
+      {template.requiredImageCount > 1 && <p className={styles.description}>图片顺序对应模板中的位置，可在提交前替换。</p>}
       {!canWrite && <p className={styles.identityHint}>请先在页顶选择并确认演示身份。</p>}
       <form onSubmit={async (event) => {
         event.preventDefault();

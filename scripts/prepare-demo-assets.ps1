@@ -1,7 +1,7 @@
 #requires -Version 7.0
 
 param(
-    [string]$OutputDirectory = (Join-Path $PSScriptRoot '..\assets\demo')
+    [string]$OutputDirectory = (Join-Path $PSScriptRoot '..\artifacts\legacy-demo-assets')
 )
 
 $ErrorActionPreference = 'Stop'

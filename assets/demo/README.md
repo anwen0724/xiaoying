@@ -5,15 +5,15 @@
 ## 内容
 
 - `templates.json`：4 个模板，分为旅行记忆和创意设计两个分类，覆盖 1、2、3 张图片要求。
-- `covers/*.svg`：模板封面，800 × 1000。
-- `results/*.svg`：模板对应的预置模拟结果，800 × 1000，带模拟结果标记。
+- `covers/*.svg`：模板封面，800 × 1400，包含本地嵌入摄影或几何设计。
+- `results/*.svg`：模板对应的预置模拟结果，800 × 1400。页面说明模拟行为。
 - `inputs/mountain.png`、`inputs/coast.png`、`inputs/sunset.jpg`：800 × 600 的实际上传文件，供正常流程演示。
 
 所有模板接受 JPEG、PNG，单文件不超过 5 MiB。SVG 仅作为随项目打包的可信展示资源，不开放用户 SVG 上传。
 
 ## 来源与复用范围
 
-上述图形是本项目使用几何形状编写的原创演示素材，由 AI 编程助手协助生成 SVG 和绘图脚本，无第三方图片、外链字体或品牌素材。可随本项目源码一并交付和修改，不涉及额外第三方素材授权。
+当前封面及结果使用 Unsplash 摄影与本项目制作的 SVG 排版、几何设计，来源和许可见 [SOURCES.md](SOURCES.md)。输入示例仍为本项目制作的几何示意图片。摄影已嵌入本地 SVG，页面运行不依赖外链图片、字体或付费服务。
 
 原题 `assets/` 中的四张截图仅用于界面布局参考，不作为产品模板、用户上传或生成结果发布。
 
@@ -29,10 +29,10 @@
 
 ## 再生成
 
-文件已保存到项目目录，容器构建和运行不需要执行素材脚本。需要修改几何演示素材时，可在 Windows 上使用 PowerShell 7，从仓库根目录执行：
+当前素材已保存到项目目录，容器构建和运行不需要执行素材脚本。`scripts/prepare-demo-assets.ps1` 仅保留旧版几何素材的生成记录，不能用于生成当前摄影版封面。需要研究旧版时可指定临时输出目录：
 
 ```powershell
-pwsh -NoProfile -File scripts/prepare-demo-assets.ps1
+pwsh -NoProfile -File scripts/prepare-demo-assets.ps1 -OutputDirectory artifacts/legacy-demo-assets
 ```
 
-脚本使用 Windows 的 `System.Drawing`，重写本目录中同名的演示文件。它不是 Linux 容器或应用运行依赖。最终页面视觉优化可以替换素材，但必须同步种子路径、来源说明及实际文件。
+脚本使用 Windows 的 `System.Drawing`，默认输出到 `artifacts/legacy-demo-assets`，不会覆盖当前素材。它不是 Linux 容器或应用运行依赖。替换当前素材时，必须同步来源说明及实际文件；现有任务保存的结果文件不随模板修改而覆盖。

@@ -1,7 +1,7 @@
 .identity {
-  display: grid;
-  gap: 6px;
-  justify-items: end;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   max-width: 100%;
 }
 .controls {
@@ -23,6 +23,7 @@
 @media (max-width: 560px) {
   .identity {
     width: 100%;
-    justify-items: start;
+    flex-wrap: wrap;
+    gap: 6px 12px;
   }
 }

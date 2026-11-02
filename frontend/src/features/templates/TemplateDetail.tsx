@@ -29,23 +29,25 @@ export async function TemplateDetail({ id }: { id: string }) {
   const template = loaded.template;
   return (
     <>
-      <Link className="back-link" href="/">← 返回模板库</Link>
-      <div className="page-heading">
-        <div><h1>{template.title}</h1><p className="subtitle">{template.description}</p></div>
-      </div>
       <TaskScope templateId={template.id}>
         <div className="creation-layout">
-          <div className="creation-input">
-            <section className={`panel ${styles.summary}`} aria-label="模板说明">
+          <div className="creation-input panel">
+            <div className={styles.detailHeading}>
+              <Link href="/" aria-label="返回模板库">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg>
+              </Link>
+              <h1>{template.title}</h1>
+            </div>
+            <section className={styles.summary} aria-label="模板说明">
               <Image className={styles.sample} src={template.coverUrl} alt={`${template.title}模拟样例`}
                 width={800} height={1000} unoptimized priority />
               <div className={styles.requirements}>
-                <h2>需要 {template.requiredImageCount} 张图片</h2>
+                <p className={styles.description}>{template.description}</p>
                 <div className={styles.format} id={`${template.id}-requirements`}>
+                  <span>需要 {template.requiredImageCount} 张图片</span>
                   <span>{template.acceptedMimeTypes.map((mime) => mime.replace('image/', '').toUpperCase()).join(' / ')}</span>
                   <span>每张不超过 {template.maxFileSizeBytes / 1024 / 1024} MiB</span>
                 </div>
-                <p>这是模拟样例。制作流程会检查素材，并返回预置结果，不会真实合成你的图片。</p>
               </div>
             </section>
             <CreationForm key={template.id} template={template} />

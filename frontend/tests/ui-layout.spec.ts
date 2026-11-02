@@ -30,7 +30,7 @@ for (const width of [1440, 768, 390]) {
         await Promise.all([...document.images].map((img) => img.decode().catch(() => {})));
       });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: `${directory}/${name}-${width}.png`, fullPage: true });
+      await page.screenshot({ path: `${directory}/${name}-${width}.png`, fullPage: true, animations: 'disabled' });
     }
 
     await page.goto('/');
@@ -43,6 +43,16 @@ for (const width of [1440, 768, 390]) {
     await expect(page.getByRole('article')).toHaveCount(4);
     await expect(page.getByRole('img', { name: '山野明信片制作结果', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: '刷新记录', exact: true })).toBeEnabled();
+    const firstCard = page.getByRole('article').first();
+    await expect(firstCard.getByLabel('任务 ID', { exact: true })).not.toBeVisible();
+    await firstCard.getByText('任务详情', { exact: true }).click();
+    await expect(firstCard.getByLabel('任务 ID', { exact: true })).toBeVisible();
+    await firstCard.getByText('任务详情', { exact: true }).click();
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect(await page.locator('main').evaluate((element) =>
+      [...element.querySelectorAll('*')].every((child) => getComputedStyle(child).animationName === 'none'),
+    )).toBe(true);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
     await capture('creation');
     const metrics = await page.evaluate(() => {
       const bounds = (selector: string) => {

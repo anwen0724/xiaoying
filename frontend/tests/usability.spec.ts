@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 
 test('upload validation describes requirements and removal returns keyboard focus to the input', async ({ page }) => {
   await openCreation(page);
-  const input = page.getByLabel('图片 1', { exact: true });
+  const input = page.getByRole('region', { name: '制作区域', exact: true }).getByLabel('图片 1', { exact: true });
   await input.setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('invalid') });
   await expect(input).toHaveAttribute('aria-invalid', 'true');
   await expect(input).toHaveAccessibleDescription(/JPEG.*PNG.*5 MiB/);
@@ -67,7 +67,7 @@ test('keyboard can choose a file and retry its upload without losing focus', asy
     ? route.fulfill({ status: 503, json: { code: 'UNAVAILABLE', message: '上传暂时不可用' } })
     : route.continue());
   await openCreation(page);
-  const input = page.getByLabel('图片 1', { exact: true });
+  const input = page.getByRole('region', { name: '制作区域', exact: true }).getByLabel('图片 1', { exact: true });
   await input.focus();
   const picker = page.waitForEvent('filechooser');
   await page.keyboard.press('Enter');

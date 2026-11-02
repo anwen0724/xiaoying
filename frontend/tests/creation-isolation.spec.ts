@@ -95,11 +95,11 @@ test('pending submission is single-flight and a late receipt cannot enter anothe
 test('template navigation and return discard previously uploaded material', async ({ page }) => {
   await openCreation(page);
   await readyImage(page);
-  await page.getByRole('link', { name: '← 返回模板库', exact: true }).click();
+  await page.getByRole('link', { name: '返回模板库', exact: true }).click();
   await page.getByRole('link', { name: /海边双拼/ }).click();
   await expect(page.getByText('0 / 2 已准备', { exact: true })).toBeVisible();
   await expect(page.getByText('mountain.png', { exact: true })).toHaveCount(0);
-  await page.getByRole('link', { name: '← 返回模板库', exact: true }).click();
+  await page.getByRole('link', { name: '返回模板库', exact: true }).click();
   await page.getByRole('link', { name: /山野明信片/ }).click();
   await expect(page.getByText('0 / 1 已准备', { exact: true })).toBeVisible();
 });

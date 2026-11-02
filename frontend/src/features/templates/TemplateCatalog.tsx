@@ -9,10 +9,9 @@ export async function TemplateCatalog({ category }: { category?: string }) {
   const [categories, templates] = await Promise.allSettled([listCategories(), listTemplates(category)]);
   return (
     <>
-      <div className="page-heading">
+      <div className={styles.catalogHeading}>
         <div>
           <h1>模板库</h1>
-          <p className="subtitle">选一个喜欢的样式，开始你的下一张创作。</p>
         </div>
         {templates.status === 'fulfilled' && <p className={styles.count}>{templates.value.length} 个模板</p>}
       </div>
@@ -34,9 +33,9 @@ export async function TemplateCatalog({ category }: { category?: string }) {
               <Image className={styles.cover} src={template.coverUrl} alt="" width={800} height={1000}
                 unoptimized loading={index === 0 ? 'eager' : 'lazy'} />
               <div className={styles.cardHeader}>
-                <h2>{template.title}</h2><span className={styles.arrow} aria-hidden="true">↗</span>
+                <h2>{template.title}</h2>
+                <p>{template.categoryName} · {template.requiredImageCount} 张图片</p>
               </div>
-              <p>{template.categoryName} · {template.requiredImageCount} 张图片</p>
             </Link>
           ))}
           {templates.value.length === 0 && (

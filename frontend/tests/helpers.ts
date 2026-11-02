@@ -17,7 +17,8 @@ export async function openCreation(page: Page) {
 }
 
 export async function readyImage(page: Page) {
-  await page.getByLabel('图片 1', { exact: true }).setInputFiles(mountain);
+  await page.getByRole('region', { name: '制作区域', exact: true })
+    .getByLabel('图片 1', { exact: true }).setInputFiles(mountain);
   await expect(page.getByText('上传成功', { exact: true })).toBeVisible();
 }
 

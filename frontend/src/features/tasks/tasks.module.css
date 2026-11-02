@@ -1,91 +1,221 @@
 .history {
   min-width: 0;
+  min-height: calc(100dvh - 120px);
 }
+
 .historyHeading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
+
 .allRecords {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  margin-top: 8px;
+  min-height: 36px;
+  margin-top: 4px;
   color: var(--muted);
+  font-size: 12px;
 }
+
+.allRecords:hover {
+  color: var(--accent);
+}
+
 .more {
   margin-top: 24px;
 }
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
-  gap: 20px;
-  margin-top: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  align-items: start;
 }
+
 .card {
-  align-self: start;
   background: var(--ground);
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 18px;
+  border-radius: 10px;
   min-width: 0;
+  overflow: hidden;
 }
+
+.media {
+  aspect-ratio: 9 / 14;
+  display: grid;
+  overflow: hidden;
+}
+
+.previewFrame {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.previewFrame > p {
+  padding: 16px;
+}
+
+.result {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.taskState {
+  display: grid;
+  grid-template-rows: 28px 24px 21px minmax(42px, auto);
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stateMark {
+  color: var(--accent);
+  display: flex;
+}
+
+.stateMark[data-status='FAILED'] {
+  color: var(--negative);
+}
+
+.progressMark {
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+}
+
+.stateMark[data-status='RUNNING'] .progressMark {
+  animation: processing 1.4s linear infinite;
+}
+
+.stateMark[data-status='QUEUED'] .progressMark {
+  border-style: dotted;
+}
+
+@keyframes processing {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cardMeta {
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+}
+
 .cardHeading {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 6px;
 }
+
 .cardHeading h3 {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
 .card p, .card time {
   font-size: 12px;
   color: var(--muted);
-  display: block;
-  margin-top: 10px;
   overflow-wrap: anywhere;
 }
+
+.cardMeta > time {
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+
 .status {
   font-size: 12px;
 }
-.card .stage {
-  font-size: 14px;
-  color: var(--ink);
+
+.taskState > .status {
+  font-size: 15px;
+  font-weight: 600;
 }
+
+.card .stage {
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .status[data-status='FAILED'], .card .error, .error {
   color: var(--negative);
 }
+
 .status[data-status='SUCCEEDED'] {
   color: var(--accent);
 }
+
+.taskDetails {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.taskDetails summary {
+  padding: 4px 0;
+  width: fit-content;
+}
+
+.taskDetails p {
+  margin-top: 8px;
+}
+
 .taskId {
   overflow-wrap: anywhere;
   font-family: Consolas, monospace;
 }
+
 .notice {
   color: var(--muted);
   margin-top: 24px;
   overflow-wrap: anywhere;
 }
-.result {
-  margin-top: 16px;
-  width: 100%;
-  height: auto;
-  max-height: 360px;
-  object-fit: contain;
-  border-radius: 6px;
-}
+
 .resultError {
-  margin-top: 16px;
+  padding: 20px;
 }
+
 .resultError button, .notice button {
   margin-top: 12px;
 }
+
 .card p time {
   display: inline;
+}
+
+@media (max-width: 720px) {
+  .history {
+    min-height: 320px;
+  }
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cardMeta {
+    padding: 10px;
+  }
+  .taskState {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }

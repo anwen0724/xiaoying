@@ -119,7 +119,8 @@ test('status 401 clears task data and requires choosing identity again', async (
   await page.route((url) => url.pathname === '/api/tasks', (route) => route.fulfill({ json: { items: [taskFixture(55)], nextCursor: null } }));
   await page.route('**/api/tasks/active', (route) => route.fulfill({ json: { items: [taskFixture(55)] } }));
   await page.route('**/api/tasks/status?*', (route) => route.fulfill({ status: 401, json: { code: 'UNAUTHORIZED', message: '会话失效' } }));
-  await openCreation(page);
+  await page.goto('/templates/mountain-card');
+  await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
   await expect(page.getByText('会话已失效，请重新选择身份。', { exact: true })).toBeVisible();
   await expect(page.getByRole('article')).toHaveCount(0);
   await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('');
