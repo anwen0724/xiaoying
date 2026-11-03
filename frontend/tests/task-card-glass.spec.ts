@@ -22,6 +22,10 @@ for (const path of ['/history', '/templates/mountain-card']) {
     const after = (await card.boundingBox())!;
     expect(after.width).toBe(before.width);
     expect(after.height).toBe(before.height);
+    if (path.startsWith('/templates/')) {
+      const list = page.getByRole('region', { name: '本模板记录列表', exact: true });
+      expect(after.y).toBeGreaterThanOrEqual((await list.boundingBox())!.y);
+    }
     expect(await sibling.boundingBox()).toEqual(siblingBefore);
     await mkdir('../artifacts/task-card-glass', { recursive: true });
     await page.screenshot({ path: `../artifacts/task-card-glass/${path === '/history' ? 'history' : 'detail'}-hover.png`, animations: 'disabled' });

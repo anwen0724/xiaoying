@@ -36,6 +36,8 @@ for (const width of [1440, 390]) {
     await upload.click();
     const dialog = page.getByRole('dialog', { name: '图片 1 预览', exact: true });
     await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveCSS('animation-duration', '0.18s');
+    await expect(dialog).toHaveCSS('transform', 'none');
     const close = dialog.getByRole('button', { name: '关闭预览', exact: true });
     await expect(close).toBeFocused();
     await expect(close).not.toHaveCSS('box-shadow', 'none');
@@ -67,6 +69,8 @@ for (const width of [1440, 390]) {
       await trigger.click();
       const result = page.getByRole('dialog', { name: '山野明信片制作结果', exact: true });
       await expect(result).toBeVisible();
+      await expect(result).toHaveCSS('animation-duration', '0.18s');
+      await expect(result).toHaveCSS('transform', 'none');
       await expect.poll(() => result.getByRole('img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
       await expect(result.getByRole('img')).toHaveCSS('object-fit', 'contain');
       await mkdir('../artifacts/image-preview', { recursive: true });
@@ -76,5 +80,11 @@ for (const width of [1440, 390]) {
       await expect(trigger).toBeFocused();
       await expect(page.getByText('任务详情', { exact: true })).toHaveCount(0);
     }
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.getByRole('button', { name: '放大查看山野明信片制作结果', exact: true }).click();
+    const reducedDialog = page.getByRole('dialog', { name: '山野明信片制作结果', exact: true });
+    await expect(reducedDialog).toHaveCSS('animation-name', 'none');
+    await expect(reducedDialog).toHaveCSS('transform', 'none');
+    await page.keyboard.press('Escape');
   });
 }

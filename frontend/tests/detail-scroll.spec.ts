@@ -19,6 +19,9 @@ for (const [width, height, template] of [
     const left = page.locator('#main-content .creation-input');
     const content = left.getByRole('region', { name: '模板与上传内容', exact: true });
     const list = page.getByRole('region', { name: '本模板记录列表', exact: true });
+    const refresh = page.getByRole('button', { name: '刷新记录', exact: true });
+    const refreshBounds = (await refresh.boundingBox())!;
+    expect((await list.boundingBox())!.y - refreshBounds.y - refreshBounds.height).toBe(16);
     if (width > 1000) {
       await expect(content).toHaveCSS('scrollbar-width', 'none');
       await expect(list).toHaveCSS('scrollbar-width', 'none');
@@ -44,6 +47,9 @@ for (const [width, height, template] of [
     }
     expect((await page.getByRole('banner').boundingBox())!.y).toBe(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    await list.evaluate((element) => { element.scrollTop = 180; });
+    const refreshedBounds = (await refresh.boundingBox())!;
+    expect((await list.boundingBox())!.y - refreshedBounds.y - refreshedBounds.height).toBe(16);
     await mkdir('../artifacts/detail-scroll', { recursive: true });
     await page.screenshot({ path: `../artifacts/detail-scroll/${width}-${height}.png` });
   });

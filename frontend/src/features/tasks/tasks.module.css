@@ -17,6 +17,7 @@
 .historyContent {
   flex: 1;
   min-height: 0;
+  margin-top: 16px;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   scrollbar-gutter: stable;
@@ -80,6 +81,10 @@
   gap: 12px;
   margin-top: 16px;
   align-items: start;
+}
+
+.historyContent > .grid:first-child {
+  margin-top: 4px;
 }
 
 .card {
