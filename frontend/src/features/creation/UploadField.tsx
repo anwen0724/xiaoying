@@ -20,7 +20,7 @@ export function UploadField({ slot, position, accept, requirementsId, disabled, 
   const preview = slot.status === 'empty' ? null : slot.preview;
   const errorId = `${slot.id}-error`;
   return (
-    <fieldset className={styles.slot} disabled={disabled}>
+    <fieldset className={`${styles.slot} ${slot.status === 'empty' ? styles.emptyUpload : ''}`} disabled={disabled}>
       <legend>图片 {position}</legend>
       <div className={`${styles.uploadBody} ${slot.status === 'empty' ? styles.emptyBody : ''}`}>
         {preview ? (

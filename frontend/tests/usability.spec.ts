@@ -1,7 +1,51 @@
 import { expect, test } from '@playwright/test';
 import { gate, mountain, openCreation, readyImage } from './helpers';
 import { taskFixture } from './fixtures/tasks';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
+
+for (const width of [1440, 390]) {
+  test(`empty upload area opens the file chooser across its surface at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/templates/mountain-card');
+    const form = page.getByRole('region', { name: '制作区域', exact: true });
+    const slot = form.getByRole('group', { name: '图片 1', exact: true });
+    const input = form.getByLabel('图片 1', { exact: true });
+    await expect(page.getByRole('combobox', { name: '演示身份' })).toBeEnabled();
+    await expect(input).toBeDisabled();
+    let chooserCount = 0;
+    page.on('filechooser', () => { chooserCount += 1; });
+    const bounds = await slot.boundingBox();
+    if (!bounds) throw new Error('Upload area is not visible');
+    await page.mouse.click(bounds.x + 8, bounds.y + bounds.height / 2);
+    expect(chooserCount).toBe(0);
+    await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
+    await expect(page.getByText('当前身份：小禾', { exact: true })).toBeVisible();
+    await expect(input).toBeEnabled();
+
+    // Test the border padding, icon/text area and lower padding through real clicks.
+    for (const [x, y] of [[8, bounds.height / 2], [bounds.width / 2, 50], [bounds.width - 8, bounds.height - 8]]) {
+      const picker = page.waitForEvent('filechooser', { timeout: 2000 });
+      await slot.click({ position: { x, y } });
+      await (await picker).setFiles([]);
+    }
+    const picker = page.waitForEvent('filechooser');
+    await slot.click({ position: { x: 8, y: bounds.height / 2 } });
+    await (await picker).setFiles(mountain);
+    await expect(form.getByText('上传成功', { exact: true })).toBeVisible();
+    await expect(form.getByRole('button', { name: '开始制作', exact: true })).toBeEnabled();
+    const replacement = page.waitForEvent('filechooser');
+    await form.getByText('替换图片', { exact: true }).click();
+    await (await replacement).setFiles(mountain);
+    await expect(form.getByText('上传成功', { exact: true })).toBeVisible();
+    const beforeRemoval = chooserCount;
+    await form.getByRole('button', { name: '移除图片 1', exact: true }).click();
+    expect(chooserCount).toBe(beforeRemoval);
+    await expect(input).toBeFocused();
+    await expect(form.getByText('尚未上传', { exact: true })).toBeVisible();
+    await mkdir('../artifacts/upload-click', { recursive: true });
+    await form.screenshot({ path: `../artifacts/upload-click/empty-focused-${width}.png` });
+  });
+}
 
 test('upload validation describes requirements and removal returns keyboard focus to the input', async ({ page }) => {
   await openCreation(page);
