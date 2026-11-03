@@ -13,7 +13,6 @@ export async function TemplateCatalog({ category }: { category?: string }) {
         <div>
           <h1>模板库</h1>
         </div>
-        {templates.status === 'fulfilled' && <p className={styles.count}>{templates.value.length} 个模板</p>}
       </div>
       {categories.status === 'fulfilled' ? (
         <nav className={styles.filters} aria-label="模板分类">

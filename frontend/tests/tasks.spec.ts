@@ -31,7 +31,7 @@ test('records survive refresh and personal history includes other templates', as
   await expect(page.getByText('上传成功', { exact: true })).toHaveCount(2);
   await page.getByRole('button', { name: '开始制作', exact: true }).click();
   const otherId = await page.getByRole('region', { name: '提交回执' }).getByLabel('任务 ID').innerText();
-  await page.getByRole('link', { name: '我的记录', exact: true }).click();
+  await page.getByRole('link', { name: '我的素材', exact: true }).click();
   await expect(page).toHaveURL(/\/history$/);
   await expect(page.getByRole('article', { name: `任务 ${id}`, exact: true })).toBeVisible();
   await expect(page.getByRole('article', { name: `任务 ${otherId}`, exact: true })).toContainText('海边双拼');

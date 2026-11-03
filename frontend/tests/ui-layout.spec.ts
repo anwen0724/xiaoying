@@ -70,7 +70,7 @@ for (const width of [1440, 768, 390]) {
     await writeFile(`${directory}/metrics-${width}.json`, JSON.stringify(metrics, null, 2));
     if (width === 1440) expect(metrics.submitBottom).toBeLessThanOrEqual(900);
 
-    await page.getByRole('link', { name: '我的记录', exact: true }).click();
+    await page.getByRole('link', { name: '我的素材', exact: true }).click();
     await expect(page).toHaveURL(/\/history$/);
     await expect(page.getByRole('heading', { level: 1, name: '我的制作记录' })).toBeVisible();
     await expect(page.getByRole('article')).toHaveCount(4);

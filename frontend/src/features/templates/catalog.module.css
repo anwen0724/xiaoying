@@ -9,11 +9,6 @@
   font-size: 20px;
 }
 
-.count {
-  color: var(--muted);
-  font-size: 12px;
-}
-
 .filters {
   display: flex;
   flex-wrap: wrap;

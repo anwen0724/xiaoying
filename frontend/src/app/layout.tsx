@@ -26,7 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </Link>
               <nav className="main-nav" aria-label="主导航">
                 <Link href="/">模板库</Link>
-                <Link href="/history">我的记录</Link>
+                <Link href="/history">我的素材</Link>
               </nav>
               <IdentityPicker />
             </div>
