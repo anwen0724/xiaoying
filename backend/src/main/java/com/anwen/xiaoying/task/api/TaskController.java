@@ -33,17 +33,18 @@ public class TaskController {
 
     @GetMapping
     public TaskPage history(HttpServletRequest request, @RequestParam(defaultValue = "20") int limit,
-            @RequestParam(required = false) String cursor, @RequestParam(required = false) String templateId) {
-        return tasks.history(identity.current(request).id(), limit, cursor, templateId);
+            @RequestParam(required = false) String cursor, @RequestParam(required = false) String templateId,
+            @RequestParam(required = false) String category) {
+        return tasks.history(identity.current(request).id(), limit, cursor, templateId, category);
     }
 
     @GetMapping("/active")
-    public Items<TaskResponse> active(HttpServletRequest request) {
+    public Items<TaskResponse> active(HttpServletRequest request, @RequestParam(required = false) String category) {
         String userId = identity.current(request).id();
         if (request.getParameter("templateId") != null) {
             throw BusinessException.invalid("未完成任务列表不接受模板筛选");
         }
-        return new Items<>(tasks.active(userId));
+        return new Items<>(tasks.active(userId, category));
     }
 
     @GetMapping("/status")

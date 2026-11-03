@@ -1,16 +1,9 @@
-import { TaskScope } from '../../features/tasks/TaskScope';
-import { TaskHistory } from '../../features/tasks/TaskHistory';
+import { MaterialHistory } from '../../features/tasks/MaterialHistory';
 
-export default function HistoryPage() {
-  return (
-    <>
-      <div className="page-heading">
-        <div>
-          <h1>我的制作记录</h1>
-          <p className="subtitle">查看不同模板的任务、进度与制作结果。</p>
-        </div>
-      </div>
-      <TaskScope><TaskHistory /></TaskScope>
-    </>
-  );
+export default async function HistoryPage({ searchParams }: {
+  searchParams: Promise<{ category?: string | string[] }>;
+}) {
+  const query = await searchParams;
+  const category = typeof query.category === 'string' ? query.category : undefined;
+  return <MaterialHistory category={category} />;
 }

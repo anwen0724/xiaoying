@@ -7,20 +7,20 @@ import { emptyTaskCache, taskCacheKey } from './task-cache';
 import { TaskController } from './TaskController';
 import type { Task } from './types';
 
-const TaskContext = createContext<{ templateId?: string; authenticated: boolean; controller: TaskController } | null>(null);
+const TaskContext = createContext<{ templateId?: string; category?: string; authenticated: boolean; controller: TaskController } | null>(null);
 
-export function TaskScope({ templateId, children }: { templateId?: string; children: React.ReactNode }) {
+export function TaskScope({ templateId, category, children }: { templateId?: string; category?: string; children: React.ReactNode }) {
   const identity = useIdentity();
   const user = identity.session.status === 'ready' ? identity.session.user : null;
   return (
-    <ScopedCache key={`${user?.id}:${identity.generation}:${templateId ?? 'all'}`}
-      templateId={templateId} authenticated={user !== null}>
+    <ScopedCache key={JSON.stringify([user?.id, identity.generation, templateId, category])}
+      templateId={templateId} category={category} authenticated={user !== null}>
       {children}
     </ScopedCache>
   );
 }
 
-function ScopedCache({ children, ...scope }: { children: React.ReactNode; templateId?: string; authenticated: boolean }) {
+function ScopedCache({ children, ...scope }: { children: React.ReactNode; templateId?: string; category?: string; authenticated: boolean }) {
   const identity = useIdentity();
   const [client] = useState(() => new QueryClient({
     defaultOptions: {
@@ -33,7 +33,7 @@ function ScopedCache({ children, ...scope }: { children: React.ReactNode; templa
       },
     },
   }));
-  const [controller] = useState(() => new TaskController(client, identity.expireIdentity, identity.refreshIdentity, scope.templateId));
+  const [controller] = useState(() => new TaskController(client, identity.expireIdentity, identity.refreshIdentity, scope.templateId, scope.category));
   useEffect(() => {
     if (!scope.authenticated) return;
     controller.start();

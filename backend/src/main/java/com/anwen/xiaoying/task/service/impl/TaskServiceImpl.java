@@ -80,16 +80,16 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public TaskPage history(String userId, int limit, String cursor, String templateId) {
+    public TaskPage history(String userId, int limit, String cursor, String templateId, String category) {
         if (limit < 1 || limit > 100) {
             throw BusinessException.invalid("limit 需要在 1 至 100 之间");
         }
-        var query = ownedQuery(userId);
+        var query = categoryQuery(userId, category);
         if (templateId != null) {
             query.eq("template_id", Ids.code(templateId));
         }
         if (cursor != null) {
-            var position = decodeCursor(cursor, userId, templateId);
+            var position = decodeCursor(cursor, userId, templateId, category);
             query.and(boundary -> boundary.lt("created_at", position.createdAt())
                 .or(tie -> tie.eq("created_at", position.createdAt()).lt("id", position.id())));
         }
@@ -100,7 +100,7 @@ public class TaskServiceImpl implements TaskService {
         String next = null;
         if (hasMore) {
             var last = page.getLast();
-            var position = new Cursor(1, userId, templateId, last.getCreatedAt(), last.getId());
+            var position = new Cursor(1, userId, templateId, category, last.getCreatedAt(), last.getId());
             next = Base64.getUrlEncoder().withoutPadding().encodeToString(
                 encodeJson(position).getBytes(java.nio.charset.StandardCharsets.UTF_8));
         }
@@ -108,8 +108,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskResponse> active(String userId) {
-        return tasks.selectList(ownedQuery(userId).in("status", "QUEUED", "RUNNING")
+    public List<TaskResponse> active(String userId, String category) {
+        return tasks.selectList(categoryQuery(userId, category).in("status", "QUEUED", "RUNNING")
                 .orderByDesc("created_at", "id"))
             .stream().map(TaskResponse::from).toList();
     }
@@ -156,21 +156,31 @@ public class TaskServiceImpl implements TaskService {
         return new QueryWrapper<TaskEntity>().eq("user_id", userId);
     }
 
+    private QueryWrapper<TaskEntity> categoryQuery(String userId, String category) {
+        var query = ownedQuery(userId);
+        if (category != null) {
+            query.apply("template_id IN (SELECT id FROM templates WHERE category = {0})", Ids.code(category));
+        }
+        return query;
+    }
+
     private record Cursor(
         @com.fasterxml.jackson.annotation.JsonProperty(required = true) int v,
         @com.fasterxml.jackson.annotation.JsonProperty(required = true) String userId,
         @com.fasterxml.jackson.annotation.JsonProperty(required = true) String templateId,
+        String category,
         @com.fasterxml.jackson.annotation.JsonProperty(required = true) Instant createdAt,
         @com.fasterxml.jackson.annotation.JsonProperty(required = true) String id) {}
 
-    private Cursor decodeCursor(String encoded, String userId, String templateId) {
+    private Cursor decodeCursor(String encoded, String userId, String templateId, String category) {
         try {
             if (encoded.isEmpty() || encoded.length() > 2048) {
                 throw new IllegalArgumentException();
             }
             var cursor = json.readValue(Base64.getUrlDecoder().decode(encoded), Cursor.class);
             if (cursor.v() != 1 || !userId.equals(cursor.userId())
-                    || !Objects.equals(templateId, cursor.templateId()) || cursor.createdAt() == null
+                    || !Objects.equals(templateId, cursor.templateId()) || !Objects.equals(category, cursor.category())
+                    || cursor.createdAt() == null
                     || cursor.createdAt().getNano() % 1_000_000 != 0) {
                 throw new IllegalArgumentException();
             }

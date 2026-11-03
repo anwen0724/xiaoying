@@ -365,7 +365,8 @@ Java 使用 `HttpSession`。成功选择身份后设置 `JSESSIONID`，属性为
 | --- | --- | --- | --- |
 | `limit` | integer | 否 | 默认 20，范围 1–100 |
 | `cursor` | string | 否 | 使用上一页 nextCursor 原值；空字符串无效 |
-| `templateId` | string | 否 | 按模板筛选；省略为当前用户全部历史 |
+| `templateId` | string | 否 | 按模板筛选；省略时不限定模板 |
+| `category` | string | 否 | 按模板分类代码筛选，如 design、travel；非空且不超过 64 字符。与 templateId 同时提供时取交集；两者都省略时返回当前用户全部历史 |
 
 返回 200：
 
@@ -376,15 +377,15 @@ Java 使用 `HttpSession`。成功选择身份后设置 `JSESSIONID`，属性为
 }
 ```
 
-非空 items 的每项为 Task，不含 steps。记录按 `createdAt DESC, id DESC` 排序。不存在的模板筛选返回空列表。最后一页 nextCursor 为 null。
+非空 items 的每项为 Task，不含 steps。记录按 `createdAt DESC, id DESC` 排序。不存在的模板或分类筛选返回空列表。分类由任务关联的 `templates.category` 决定，在数据库分页之前过滤，不只过滤已加载页面。最后一页 nextCursor 为 null。
 
-服务端获取 limit＋1 条以判断下一页。cursor 使用 Base64URL 编码的 JSON，包含 `v=1`、`userId`、`templateId`（无筛选为 null）、最后一条 `createdAt` 和 `id`。cursor 是分页位置，不是权限凭据；所有查询仍显式限定会话用户。
+服务端获取 limit＋1 条以判断下一页。cursor 使用 Base64URL 编码的 JSON，包含 `v=1`、`userId`、`templateId`、`category`（无对应筛选为 null）、最后一条 `createdAt` 和 `id`。旧 cursor 未包含 category 时按无分类筛选处理。cursor 是分页位置，不是权限凭据；所有查询仍显式限定会话用户。
 
 cursor 解码失败、字段错误或筛选／用户不匹配返回 400／INVALID_CURSOR。翻页条件为创建时间更早，或时间相同且 ID 更小。翻页过程中新增任务在重新加载首屏时出现，不承诺多页查询是同一时间快照。
 
 ### 6.4 `GET /api/tasks/active`
 
-要求会话。不接受 templateId 筛选，不分页。返回 200／`{ "items": [Task] }`，包含当前用户所有 QUEUED、RUNNING 任务，按创建时间和 ID 倒序。
+要求会话。不接受 templateId 筛选，不分页。可选 category 参数与历史接口使用相同规则。省略时返回当前用户全部 QUEUED、RUNNING 任务；提供时返回该分类下全部未完成任务，不受历史分页限制。返回 200／`{ "items": [Task] }`，按创建时间和 ID 倒序。
 
 该接口用于进入页面和刷新时恢复跟踪集合。不能只用历史第一页恢复任务。此接口不适合单独检测任务终态，因为已结束任务会从集合消失；后续使用批量状态接口。
 
@@ -478,3 +479,4 @@ Invoke-RestMethod -Uri "$baseUri/api/tasks?limit=20" -WebSession $demoSession
 | 2026-11-02 | 首版，定义 17 个 HTTP 操作及公共对象 | 作为前后端实现与验收依据 |
 | 2026-11-02 | 历史增加可选 templateId；明确 cursor、批量查询与错误语义 | 对齐制作页按模板查看历史、刷新恢复和多任务跟踪 |
 | 2026-11-02 | 17 个操作实现并完成同源联调；JSON 拒绝数字转字符串，时间固定输出毫秒 | 落实既有协议，未增加接口或更改字段 |
+| 2026-11-03 | 历史和 active 增加可选 category，cursor 绑定分类 | 支持“我的素材”面板内分类；省略参数时保持原查询范围，旧无分类 cursor 仍可用 |

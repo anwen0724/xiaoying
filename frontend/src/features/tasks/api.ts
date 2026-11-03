@@ -11,13 +11,15 @@ export async function readTaskStatuses(ids: string[], signal: AbortSignal) {
   return { tasks: items(response, parseTask), missingIds: response.missingIds.map(text) };
 }
 
-export async function readActiveTasks(signal: AbortSignal): Promise<Task[]> {
-  return items(await requestJson('/api/tasks/active', { signal }), parseTask);
+export async function readActiveTasks(signal: AbortSignal, category?: string): Promise<Task[]> {
+  const query = category === undefined ? '' : `?category=${encodeURIComponent(category)}`;
+  return items(await requestJson(`/api/tasks/active${query}`, { signal }), parseTask);
 }
 
-export async function readTaskHistory(templateId: string | undefined, cursor: string | null, signal: AbortSignal) {
+export async function readTaskHistory(templateId: string | undefined, cursor: string | null, signal: AbortSignal, category?: string) {
   const query = new URLSearchParams({ limit: '20' });
   if (templateId) query.set('templateId', templateId);
+  if (category !== undefined) query.set('category', category);
   if (cursor) query.set('cursor', cursor);
   const page = record(await requestJson(`/api/tasks?${query}`, { signal }));
   return { tasks: items(page, parseTask), nextCursor: page.nextCursor === null ? null : text(page.nextCursor) };

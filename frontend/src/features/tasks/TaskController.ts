@@ -19,6 +19,7 @@ export class TaskController {
     private readonly unauthorized: () => void,
     private readonly confirmIdentity: () => Promise<void>,
     private readonly templateId?: string,
+    private readonly category?: string,
   ) {}
 
   get snapshot(): TaskCache {
@@ -83,7 +84,7 @@ export class TaskController {
     try {
       const page = await this.client.fetchQuery({
         queryKey: ['transport', 'history', ++this.sequence],
-        queryFn: ({ signal }) => readTaskHistory(this.templateId, cursor, signal),
+        queryFn: ({ signal }) => readTaskHistory(this.templateId, cursor, signal, this.category),
       });
       if (!owns()) return;
       this.update((current) => ({
@@ -122,7 +123,7 @@ export class TaskController {
     try {
       const tasks = await this.client.fetchQuery({
         queryKey: ['transport', 'active', ++this.sequence],
-        queryFn: ({ signal }) => readActiveTasks(signal),
+        queryFn: ({ signal }) => readActiveTasks(signal, this.category),
       });
       if (!owns()) return;
       this.update((current) => ({

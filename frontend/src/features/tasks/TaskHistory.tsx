@@ -6,11 +6,12 @@ import { useTasks } from './TaskScope';
 import { TaskCard } from './TaskCard';
 import styles from './tasks.module.css';
 
-export function TaskHistory() {
+export function TaskHistory({ children }: { children?: React.ReactNode }) {
   const heading = useRef<HTMLHeadingElement>(null);
+  const region = useRef<HTMLElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const end = useRef<HTMLDivElement>(null);
-  const { cache, templateId, authenticated, controller } = useTasks();
+  const { cache, templateId, category, authenticated, controller } = useTasks();
   const { cursor, read } = cache.history;
   useEffect(() => {
     if (!authenticated || !cursor || read.status !== 'idle' || !end.current) return;
@@ -20,7 +21,7 @@ export function TaskHistory() {
     observer.observe(end.current);
     return () => observer.disconnect();
   }, [authenticated, controller, cursor, read.status, templateId]);
-  const title = templateId ? '历史素材' : '我的记录';
+  const title = templateId ? '历史素材' : '我的素材';
   const ids = [...new Set([...cache.history.ids, ...cache.pinnedIds])];
   const missing = Object.entries(cache.missing).filter(([, value]) => !templateId || value.templateId === templateId);
   const entries = ids.flatMap((id) => cache.entries[id] ? [cache.entries[id]] : [])
@@ -29,13 +30,13 @@ export function TaskHistory() {
   const isEmpty = entries.length === 0 && missing.length === 0 && cache.history.loaded
     && cache.history.read.status === 'idle' && cache.activeRead.status === 'idle';
   function retry(action: () => void) {
-    heading.current?.focus();
+    (heading.current ?? region.current)?.focus();
     action();
   }
   return (
-    <section className={`panel ${styles.history} ${templateId ? styles.templateHistory : ''}`} aria-label={title}>
+    <section ref={region} tabIndex={-1} className={`panel ${styles.history} ${templateId ? styles.templateHistory : ''}`} aria-label={title}>
       <div className={styles.historyHeading}>
-        <h2 ref={heading} tabIndex={-1}>{title}</h2>
+        {templateId ? <h2 ref={heading} tabIndex={-1}>{title}</h2> : children}
         {authenticated && <button type="button" disabled={cache.history.read.status === 'loading' && !cache.history.loadingMore}
           onClick={() => controller.refresh()}>刷新记录</button>}
       </div>
@@ -65,8 +66,9 @@ export function TaskHistory() {
           {missing.map(([id]) => (
             <p key={id} className={styles.notice} role="status">记录不可访问：{id}</p>
           ))}
-          {isEmpty &&
-            <p className={styles.notice}>还没有制作记录，<Link href="/">选择模板开始创作</Link>。</p>}
+          {isEmpty && (category !== undefined
+            ? <p className={styles.notice}>这个分类还没有制作记录。</p>
+            : <p className={styles.notice}>还没有制作记录，<Link href="/">选择模板开始创作</Link>。</p>)}
           {read.status === 'loading' && cache.history.loadingMore &&
             <p role="status" className={styles.notice}>正在加载更多记录…</p>}
           {cursor && <div ref={end} className={styles.scrollEnd} aria-hidden="true" />}

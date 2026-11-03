@@ -72,7 +72,7 @@ for (const width of [1440, 768, 390]) {
 
     await page.getByRole('link', { name: '我的素材', exact: true }).click();
     await expect(page).toHaveURL(/\/history$/);
-    await expect(page.getByRole('heading', { level: 1, name: '我的制作记录' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: '我的素材' })).toBeVisible();
     await expect(page.getByRole('article')).toHaveCount(4);
     await expect(page.getByRole('img', { name: '山野明信片制作结果', exact: true })).toBeVisible();
     await capture('history');

@@ -7,8 +7,14 @@ import java.util.List;
 public interface TaskService {
     TaskResponse create(String userId, CreateTaskRequest request);
     TaskDetail detail(String userId, String id);
-    TaskPage history(String userId, int limit, String cursor, String templateId);
-    List<TaskResponse> active(String userId);
+    default TaskPage history(String userId, int limit, String cursor, String templateId) {
+        return history(userId, limit, cursor, templateId, null);
+    }
+    TaskPage history(String userId, int limit, String cursor, String templateId, String category);
+    default List<TaskResponse> active(String userId) {
+        return active(userId, null);
+    }
+    List<TaskResponse> active(String userId, String category);
     TaskStatuses statuses(String userId, String ids);
     byte[] result(String userId, String id);
 }

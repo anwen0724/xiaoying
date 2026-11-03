@@ -30,9 +30,37 @@
 
 .historyHeading {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.historyHeading > button {
+  margin-left: auto;
+}
+
+.filterGroup {
+  min-width: 0;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.filters a {
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.filters a:hover, .filters a[aria-current='page'] {
+  color: var(--accent);
+  background: var(--raised);
 }
 
 .scrollEnd {
