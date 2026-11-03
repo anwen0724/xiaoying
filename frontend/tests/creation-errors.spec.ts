@@ -31,9 +31,21 @@ test('expired session clears assets and requires choosing identity again', async
   await page.getByRole('button', { name: '开始制作', exact: true }).click();
   await expect(page.getByText('会话已失效，请重新选择身份。', { exact: true })).toBeVisible();
   await expect(page.getByText('已选 0 / 1 张', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('图片 1', { exact: true })).toBeDisabled();
+  const input = page.getByLabel('图片 1', { exact: true });
+  await expect(input).toBeEnabled();
+  await expect(page.getByRole('button', { name: '开始制作', exact: true })).toBeDisabled();
+  let choosers = 0;
+  page.on('filechooser', () => { choosers += 1; });
+  await input.click();
+  const prompt = page.getByRole('dialog', { name: '请先选择身份', exact: true });
+  await expect(prompt).toBeVisible();
+  expect(choosers).toBe(0);
+  await prompt.getByRole('button', { name: '去选择身份', exact: true }).click();
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toBeFocused();
   await chooseIdentity(page, 'demo-bob');
-  await expect(page.getByLabel('图片 1', { exact: true })).toBeEnabled();
+  await expect(page.getByText('已选 0 / 1 张', { exact: true })).toBeVisible();
+  await readyImage(page);
+  await expect(page.getByRole('button', { name: '开始制作', exact: true })).toBeEnabled();
 });
 
 test('uncertain submission retains files and retries only on explicit user action', async ({ page }) => {

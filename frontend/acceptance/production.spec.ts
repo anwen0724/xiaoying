@@ -63,6 +63,7 @@ test('clean production build completes the real user journey and persists its ou
     await expect.poll(() => resultPreview.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
     await resultPreview.getByRole('button', { name: '关闭预览' }).click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: `${evidenceDirectory}/${template.id}.png`, fullPage: true });
   }
 
