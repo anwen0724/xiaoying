@@ -39,7 +39,6 @@ export function TaskHistory() {
         {authenticated && <button type="button" disabled={cache.history.read.status === 'loading' && !cache.history.loadingMore}
           onClick={() => controller.refresh()}>刷新记录</button>}
       </div>
-      {templateId && <Link className={styles.allRecords} href="/history">查看全部记录 →</Link>}
       <div ref={content} className={templateId ? styles.historyContent : undefined}
         role={templateId ? 'region' : undefined} aria-label={templateId ? '本模板记录列表' : undefined}
         tabIndex={templateId ? 0 : undefined}>

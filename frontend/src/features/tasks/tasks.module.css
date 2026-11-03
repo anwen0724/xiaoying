@@ -10,7 +10,7 @@
   min-height: 0;
 }
 
-.templateHistory .historyHeading, .templateHistory .allRecords {
+.templateHistory .historyHeading {
   flex-shrink: 0;
 }
 
@@ -33,19 +33,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-}
-
-.allRecords {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.allRecords:hover {
-  color: var(--accent);
 }
 
 .scrollEnd {
