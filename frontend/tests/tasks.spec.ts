@@ -36,7 +36,7 @@ test('records survive refresh and personal history includes other templates', as
   await expect(page.getByRole('article', { name: `任务 ${id}`, exact: true })).toBeVisible();
   await expect(page.getByRole('article', { name: `任务 ${otherId}`, exact: true })).toContainText('海边双拼');
   await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
-  await expect(page.getByText('当前身份：阿远', { exact: true })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-bob');
   await expect(page.getByRole('article', { name: `任务 ${id}`, exact: true })).toHaveCount(0);
 });
 

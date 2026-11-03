@@ -123,6 +123,10 @@ select {
 }
 
 .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--ground);
   border-bottom: 1px solid var(--line);
 }
 
@@ -174,6 +178,7 @@ select {
 }
 
 .canvas {
+  scroll-margin-top: 140px;
   max-width: 1680px;
   margin: 0 auto;
   padding: 16px 20px 40px;
@@ -244,12 +249,12 @@ select {
 }
 
 .skip-link {
-  position: absolute;
+  position: fixed;
   top: -100px;
   left: 16px;
   padding: 12px;
   background: var(--raised);
-  z-index: 10;
+  z-index: 30;
 }
 
 .skip-link:focus {

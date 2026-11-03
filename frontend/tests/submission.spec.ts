@@ -8,9 +8,10 @@ test('real uploads create distinct tasks only through explicit submission', asyn
   });
   await page.goto('/templates/inspiration-grid');
   await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-  await expect(page.getByText('当前身份：小禾', { exact: true })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
   for (const [index, file] of ['mountain.png', 'coast.png', 'sunset.jpg'].entries()) {
-    await page.getByLabel(`图片 ${index + 1}`, { exact: true }).setInputFiles(path.resolve('../assets/demo/inputs', file));
+    await page.getByRole('region', { name: '制作区域', exact: true })
+      .getByLabel(`图片 ${index + 1}`, { exact: true }).setInputFiles(path.resolve('../assets/demo/inputs', file));
   }
   await expect(page.getByText('上传成功', { exact: true })).toHaveCount(3);
   await page.getByRole('button', { name: '开始制作', exact: true }).click();

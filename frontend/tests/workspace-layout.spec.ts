@@ -1,0 +1,76 @@
+import { expect, test } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+import { failedTask } from './fixtures/tasks';
+import { mountain } from './helpers';
+
+for (const width of [1440, 768, 390]) {
+  test(`identity prompt and bounded history at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const directory = `../artifacts/workspace-layout/${process.env.UI_REVIEW_VERSION ?? 'final'}`;
+    await mkdir(directory, { recursive: true });
+    const items = Array.from({ length: 24 }, (_, index) => failedTask(700 + index));
+    await page.route((url) => url.pathname === '/api/tasks', (route) => {
+      const more = new URL(route.request().url()).searchParams.has('cursor');
+      return route.fulfill({ json: { items: more ? items.slice(20) : items.slice(0, 20), nextCursor: more ? null : 'page-2' } });
+    });
+    await page.route('**/api/tasks/active', (route) => route.fulfill({ json: { items: [] } }));
+    let fileChoosers = 0;
+    let uploads = 0;
+    page.on('filechooser', () => { fileChoosers += 1; });
+    page.on('request', (request) => { if (new URL(request.url()).pathname === '/api/assets') uploads += 1; });
+    await page.goto('/templates/mountain-card');
+    const identity = page.getByRole('combobox', { name: '演示身份' });
+    await expect(identity).toBeEnabled();
+    const form = page.getByRole('region', { name: '制作区域', exact: true });
+    const input = form.getByLabel('图片 1', { exact: true });
+    await form.getByRole('group', { name: '图片 1', exact: true }).click({ position: { x: 8, y: 60 } });
+    const prompt = page.getByRole('dialog', { name: '请先选择身份', exact: true });
+    await expect(prompt).toBeVisible();
+    expect(fileChoosers).toBe(0);
+    expect(uploads).toBe(0);
+    await expect(page.getByText('请先在页顶选择并确认演示身份。', { exact: true })).toHaveCount(0);
+    await page.screenshot({ path: `${directory}/identity-prompt-${width}.png` });
+    await page.keyboard.press('Escape');
+    await expect(prompt).not.toBeVisible();
+    await expect(input).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(prompt).toBeVisible();
+    await prompt.getByRole('button', { name: '去选择身份', exact: true }).click();
+    await expect(identity).toBeFocused();
+    await identity.selectOption('demo-alice');
+    await expect(identity).toHaveValue('demo-alice');
+    await expect(identity).toBeEnabled();
+    await expect(page.getByText('当前身份：小禾', { exact: true })).toHaveCount(0);
+    const picker = page.waitForEvent('filechooser');
+    await form.getByRole('group', { name: '图片 1', exact: true }).click({ position: { x: 8, y: 60 } });
+    await (await picker).setFiles(mountain);
+    await expect(form.getByText('上传成功', { exact: true })).toBeVisible();
+    expect(fileChoosers).toBe(1);
+
+    const history = page.getByRole('region', { name: '本模板记录', exact: true });
+    const list = history.getByRole('region', { name: '本模板记录列表', exact: true });
+    await expect(history.getByRole('article')).toHaveCount(20);
+    const initialHeight = (await history.boundingBox())!.height;
+    expect(initialHeight).toBeLessThan(900);
+    await list.scrollIntoViewIfNeeded();
+    expect(await list.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+    const heading = history.getByRole('heading', { name: '本模板记录', exact: true });
+    const headingY = (await heading.boundingBox())!.y;
+    const pageY = await page.evaluate(() => scrollY);
+    await list.hover();
+    await page.mouse.wheel(0, 500);
+    await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    expect(await page.evaluate(() => scrollY)).toBe(pageY);
+    expect((await heading.boundingBox())!.y).toBe(headingY);
+    await list.getByRole('button', { name: '加载更多', exact: true }).click();
+    await expect(history.getByRole('article')).toHaveCount(24);
+    expect((await history.boundingBox())!.height).toBe(initialHeight);
+    await list.evaluate((element) => { element.scrollTop = 0; });
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
+    expect((await page.getByRole('banner').boundingBox())!.y).toBe(0);
+    await page.screenshot({ path: `${directory}/scrolled-${width}.png` });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: `${directory}/workspace-${width}.png`, fullPage: true });
+  });
+}

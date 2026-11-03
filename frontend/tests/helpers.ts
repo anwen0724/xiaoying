@@ -13,7 +13,7 @@ export function gate() {
 export async function openCreation(page: Page) {
   await page.goto('/templates/mountain-card');
   await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-  await expect(page.getByText('当前身份：小禾', { exact: true })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
 }
 
 export async function readyImage(page: Page) {

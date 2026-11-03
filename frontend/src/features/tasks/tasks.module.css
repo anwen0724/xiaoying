@@ -3,6 +3,25 @@
   min-height: calc(100dvh - 120px);
 }
 
+.history.templateHistory {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 120px);
+  min-height: 360px;
+}
+
+.templateHistory .historyHeading, .templateHistory .allRecords {
+  flex-shrink: 0;
+}
+
+.historyContent {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+
 .historyHeading {
   display: flex;
   align-items: center;
@@ -211,6 +230,19 @@
   }
   .taskState {
     padding: 12px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .history.templateHistory {
+    height: 70dvh;
+    min-height: 320px;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1000px) {
+  .templateHistory .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

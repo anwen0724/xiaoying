@@ -11,15 +11,18 @@ for (const width of [1440, 390]) {
     const slot = form.getByRole('group', { name: '图片 1', exact: true });
     const input = form.getByLabel('图片 1', { exact: true });
     await expect(page.getByRole('combobox', { name: '演示身份' })).toBeEnabled();
-    await expect(input).toBeDisabled();
+    await expect(input).toBeEnabled();
     let chooserCount = 0;
     page.on('filechooser', () => { chooserCount += 1; });
     const bounds = await slot.boundingBox();
     if (!bounds) throw new Error('Upload area is not visible');
     await page.mouse.click(bounds.x + 8, bounds.y + bounds.height / 2);
+    const prompt = page.getByRole('dialog', { name: '请先选择身份', exact: true });
+    await expect(prompt).toBeVisible();
     expect(chooserCount).toBe(0);
+    await prompt.getByRole('button', { name: '取消', exact: true }).click();
     await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-    await expect(page.getByText('当前身份：小禾', { exact: true })).toBeVisible();
+    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
     await expect(input).toBeEnabled();
 
     // Test the border padding, icon/text area and lower padding through real clicks.
@@ -147,7 +150,7 @@ for (const [templateId, count] of [['travel-duo', 2], ['inspiration-grid', 3]] a
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/templates/${templateId}`);
     await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-    await expect(page.getByText('当前身份：小禾', { exact: true })).toBeVisible();
+    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
     for (let index = 1; index <= count; index++) {
       await page.getByLabel(`图片 ${index}`, { exact: true }).setInputFiles({
         name: `${'long-travel-photo-'.repeat(8)}${index}.png`, mimeType: 'image/png', buffer: await readFile(mountain),

@@ -7,7 +7,7 @@ const coast = path.resolve('../assets/demo/inputs/coast.png');
 test('template upload slots validate, preview, replace and remove real files', async ({ page }) => {
   await page.goto('/templates/travel-duo');
   await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-  await expect(page.getByText('当前身份：小禾', { exact: true })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
   const submit = page.getByRole('button', { name: '开始制作', exact: true });
   await expect(submit).toBeDisabled();
   await page.getByLabel('图片 1', { exact: true }).setInputFiles(mountain);

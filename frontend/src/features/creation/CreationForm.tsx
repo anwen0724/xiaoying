@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { useIdentity } from '../identity/IdentityProvider';
 import type { Template } from '../templates/types';
 import { UploadField } from './UploadField';
@@ -13,14 +14,16 @@ export function CreationForm({ template }: { template: Template }) {
   const identity = useIdentity();
   const user = identity.session.status === 'ready' ? identity.session.user : null;
   return <ScopedForm key={`${template.id}:${identity.generation}`} template={template}
-    canWrite={user !== null} onUnauthorized={identity.expireIdentity} />;
+    canWrite={user !== null} identityReady={identity.session.status === 'ready'} onUnauthorized={identity.expireIdentity} />;
 }
 
-function ScopedForm({ template, canWrite, onUnauthorized }: {
+function ScopedForm({ template, canWrite, identityReady, onUnauthorized }: {
   template: Template;
   canWrite: boolean;
+  identityReady: boolean;
   onUnauthorized: () => void;
 }) {
+  const identityPrompt = useRef<HTMLDialogElement>(null);
   const { slots, choose, remove } = useUploads(template, onUnauthorized);
   const { accepted } = useTasks();
   const { submission, submit, clear } = useSubmission(template.id, onUnauthorized, accepted);
@@ -37,7 +40,6 @@ function ScopedForm({ template, canWrite, onUnauthorized }: {
         <span>{readyCount} / {template.requiredImageCount} 已准备</span>
       </div>
       {template.requiredImageCount > 1 && <p className={styles.description}>图片顺序对应模板中的位置，可在提交前替换。</p>}
-      {!canWrite && <p className={styles.identityHint}>请先在页顶选择并确认演示身份。</p>}
       <form onSubmit={async (event) => {
         event.preventDefault();
         if (!canSubmit) return;
@@ -48,7 +50,8 @@ function ScopedForm({ template, canWrite, onUnauthorized }: {
           {slots.map((slot, index) => (
             <UploadField key={slot.id} slot={slot} position={index + 1}
               requirementsId={`${template.id}-requirements`}
-              accept={template.acceptedMimeTypes.join(',')} disabled={!canWrite || pending}
+              accept={template.acceptedMimeTypes.join(',')} disabled={!identityReady || pending}
+              onRequestIdentity={!canWrite ? () => identityPrompt.current?.showModal() : undefined}
               onChoose={async (file) => { if (canWrite && clear()) await choose(slot.id, file); }}
               onRemove={() => { if (canWrite && clear()) remove(slot.id); }} />
           ))}
@@ -60,6 +63,16 @@ function ScopedForm({ template, canWrite, onUnauthorized }: {
         </div>
       </form>
       <SubmissionFeedback submission={submission} />
+      <dialog ref={identityPrompt} className={styles.identityPrompt} aria-label="请先选择身份">
+        <h2>请先选择身份</h2>
+        <div className={styles.promptActions}>
+          <button type="button" onClick={() => identityPrompt.current?.close()}>取消</button>
+          <button type="button" className={styles.promptPrimary} onClick={() => {
+            identityPrompt.current?.close();
+            document.getElementById('demo-identity')?.focus();
+          }}>去选择身份</button>
+        </div>
+      </dialog>
     </section>
   );
 }

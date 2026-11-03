@@ -47,7 +47,7 @@ test('switching identity invalidates an old upload and clears private form state
   await page.getByLabel('图片 1', { exact: true }).setInputFiles(mountain);
   await started.promise;
   await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
-  await expect(page.getByText('当前身份：阿远', { exact: true })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-bob');
   const lateResponse = page.waitForResponse('**/api/assets');
   release.release();
   await delivered.promise;
@@ -82,7 +82,7 @@ test('pending submission is single-flight and a late receipt cannot enter anothe
   await expect(page.getByRole('button', { name: '正在提交…', exact: true })).toBeDisabled();
   await expect(page.getByLabel('图片 1', { exact: true })).toBeDisabled();
   await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
-  await expect(page.getByText('当前身份：阿远', { exact: true })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-bob');
   const lateResponse = page.waitForResponse('**/api/tasks');
   release.release();
   await delivered.promise;

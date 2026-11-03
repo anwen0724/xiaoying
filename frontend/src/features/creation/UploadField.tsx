@@ -11,11 +11,12 @@ type Props = {
   accept: string;
   requirementsId: string;
   disabled: boolean;
+  onRequestIdentity?: () => void;
   onChoose: (file: File) => Promise<void>;
   onRemove: () => void;
 };
 
-export function UploadField({ slot, position, accept, requirementsId, disabled, onChoose, onRemove }: Props) {
+export function UploadField({ slot, position, accept, requirementsId, disabled, onRequestIdentity, onChoose, onRemove }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const preview = slot.status === 'empty' ? null : slot.preview;
   const errorId = `${slot.id}-error`;
@@ -40,6 +41,12 @@ export function UploadField({ slot, position, accept, requirementsId, disabled, 
           <label className={styles.fileLabel}>
             {slot.status === 'empty' ? '选择图片' : '替换图片'}
             <input ref={input} type="file" accept={accept} aria-label={`图片 ${position}`}
+              onClick={(event) => {
+                if (onRequestIdentity) {
+                  event.preventDefault();
+                  onRequestIdentity();
+                }
+              }}
               aria-invalid={slot.status === 'failed' ? true : undefined}
               aria-describedby={slot.status === 'failed' ? `${requirementsId} ${errorId}` : requirementsId}
               onChange={async (event) => {

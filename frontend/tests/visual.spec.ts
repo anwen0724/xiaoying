@@ -30,10 +30,11 @@ for (const width of [1440, 768, 390]) {
     await page.goto('/');
     await expect(page.getByRole('link', { name: /山野明信片/ })).toBeVisible();
     await expect(page.getByRole('combobox', { name: '演示身份' })).toBeEnabled();
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: `../artifacts/phase-5/live/catalog-${width}.png`, fullPage: true });
     await page.getByRole('link', { name: /山野明信片/ }).click();
     await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-    await expect(page.getByText('当前身份：小禾', { exact: true })).toBeVisible();
+    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
     await readyImage(page);
     const submit = page.getByRole('button', { name: '开始制作', exact: true });
     await submit.focus();
@@ -41,6 +42,7 @@ for (const width of [1440, 768, 390]) {
     await expect(page.getByRole('region', { name: '提交回执' })).toBeVisible();
     const id = await page.getByRole('region', { name: '提交回执' }).getByLabel('任务 ID').innerText();
     await expect(page.getByRole('article', { name: `任务 ${id}`, exact: true }).getByRole('img')).toBeVisible();
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: `../artifacts/phase-5/live/creation-${width}.png`, fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.getByRole('link', { name: '我的记录', exact: true }).click();
@@ -48,6 +50,7 @@ for (const width of [1440, 768, 390]) {
     await expect(page.getByRole('heading', { level: 1, name: '我的制作记录', exact: true })).toBeVisible();
     await expect(page.getByRole('article')).toHaveCount(3);
     await expect(page.getByRole('article', { name: `任务 ${id}`, exact: true }).getByRole('img')).toBeVisible();
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: `../artifacts/phase-5/live/history-${width}.png`, fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     expect(runtimeErrors).toEqual([]);

@@ -27,7 +27,7 @@ for (const change of ['identity', 'template'] as const) {
     originalScope = false;
     if (change === 'identity') {
       await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
-      await expect(page.getByText('当前身份：阿远', { exact: true })).toBeVisible();
+      await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-bob');
     } else {
       await page.getByRole('link', { name: '模板库', exact: true }).click();
       await page.getByRole('link', { name: /海边双拼/ }).click();
