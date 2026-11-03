@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { errorMessage, RequestError } from '../../shared/api/http';
 import { ReadError } from '../../shared/ui/ReadError';
@@ -7,6 +6,7 @@ import { TaskScope } from '../tasks/TaskScope';
 import { TaskHistory } from '../tasks/TaskHistory';
 import { getTemplate } from './api';
 import styles from './catalog.module.css';
+import { TemplateCover } from './TemplateCover';
 
 export async function TemplateDetail({ id }: { id: string }) {
   const loaded = await getTemplate(id).then(
@@ -40,8 +40,8 @@ export async function TemplateDetail({ id }: { id: string }) {
                 <h1>{template.title}</h1>
               </div>
               <section className={styles.summary} aria-label="模板说明">
-                <Image className={styles.sample} src={template.coverUrl} alt={`${template.title}模拟样例`}
-                  width={800} height={1000} unoptimized priority />
+                <TemplateCover key={template.coverUrl} className={styles.sample} src={template.coverUrl}
+                  title={template.title} alt={`${template.title}模拟样例`} priority />
                 <div className={styles.requirements}>
                   <p className={styles.description}>{template.description}</p>
                   <div className={styles.format} id={`${template.id}-requirements`}>

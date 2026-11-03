@@ -1,9 +1,9 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { errorMessage } from '../../shared/api/http';
 import { ReadError } from '../../shared/ui/ReadError';
 import { listCategories, listTemplates } from './api';
 import styles from './catalog.module.css';
+import { TemplateCover } from './TemplateCover';
 
 export async function TemplateCatalog({ category }: { category?: string }) {
   const [categories, templates] = await Promise.allSettled([listCategories(), listTemplates(category)]);
@@ -28,14 +28,16 @@ export async function TemplateCatalog({ category }: { category?: string }) {
       ) : (
         <div className="catalog-grid">
           {templates.value.map((template, index) => (
-            <Link className={styles.card} key={template.id} href={`/templates/${encodeURIComponent(template.id)}`}>
-              <Image className={styles.cover} src={template.coverUrl} alt="" width={800} height={1000}
-                unoptimized loading={index === 0 ? 'eager' : 'lazy'} />
-              <div className={styles.cardHeader}>
-                <h2>{template.title}</h2>
-                <p>{template.categoryName} · {template.requiredImageCount} 张图片</p>
-              </div>
-            </Link>
+            <article className={styles.card} key={template.id}>
+              <TemplateCover key={template.coverUrl} className={styles.cover} src={template.coverUrl}
+                title={template.title} alt="" priority={index === 0} />
+              <Link className={styles.cardLink} href={`/templates/${encodeURIComponent(template.id)}`}>
+                <div className={styles.cardHeader}>
+                  <h2>{template.title}</h2>
+                  <p>{template.categoryName} · {template.requiredImageCount} 张图片</p>
+                </div>
+              </Link>
+            </article>
           ))}
           {templates.value.length === 0 && (
             <section className={`panel ${styles.empty}`}>
