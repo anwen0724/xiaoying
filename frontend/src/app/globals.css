@@ -1,15 +1,15 @@
 :root {
-  color-scheme: dark;
-  --ground: #191c20;
-  --surface: #22262b;
-  --raised: #2c3239;
-  --line: #3b424b;
+  color-scheme: light;
+  --ground: #eff3f5;
+  --surface: #fcfcfa;
+  --raised: #e1ecf2;
+  --line: #d8e1e7;
   --control: #778592;
-  --ink: #edf2f5;
-  --muted: #b0bdc8;
-  --accent: #93b9cf;
-  --accent-ink: #172a36;
-  --negative: #f3b4ad;
+  --ink: #282d32;
+  --muted: #5e6b75;
+  --accent: #476d83;
+  --accent-ink: #fcfcfa;
+  --negative: #a23f38;
   --gap: 16px;
   --radius: 12px;
   font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;

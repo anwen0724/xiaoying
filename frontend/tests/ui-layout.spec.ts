@@ -27,7 +27,10 @@ for (const width of [1440, 768, 390]) {
     async function capture(name: string) {
       await page.evaluate(async () => {
         await document.fonts.ready;
-        await Promise.all([...document.images].map((img) => img.decode().catch(() => {})));
+        const images = [...document.images].filter((img) => img.checkVisibility());
+        // Full-page captures include offscreen lazy images, but not hidden route copies.
+        images.forEach((img) => { img.loading = 'eager'; });
+        await Promise.all(images.map((img) => img.decode()));
       });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.screenshot({ path: `${directory}/${name}-${width}.png`, fullPage: true, animations: 'disabled' });
@@ -39,6 +42,7 @@ for (const width of [1440, 768, 390]) {
     await capture('catalog');
     await page.getByRole('link', { name: /山野明信片/ }).click();
     await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
+    await expect(page.getByText('当前身份：小禾', { exact: true })).toBeVisible();
     await readyImage(page);
     await expect(page.getByRole('article')).toHaveCount(4);
     await expect(page.getByRole('img', { name: '山野明信片制作结果', exact: true })).toBeVisible();

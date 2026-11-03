@@ -262,7 +262,7 @@ docker compose -p xiaoying-acceptance --profile test --profile browser down --vo
 
 后端基于用户提供的 `C:\all\work\study\initialized-backend`。复用 Maven Wrapper、POM 构建组织与异常处理思路，改为本项目包名、依赖、配置和响应契约；原目录未修改。来源没有 commit，因此不填来源版本号。没有复制本地凭据、IDE 文件或原构建产物。
 
-当前 UI 按原题主要布局修订，并按用户要求采用石墨灰与雾岛蓝：紧凑图片列表、左侧完整制作面板、右侧统一结果卡片。提供轻量悬停、按压和处理中动画，支持减少动态效果。模板摄影已本地嵌入 SVG，来源及许可见 [素材说明](assets/demo/SOURCES.md)，上传样例保持不变。
+当前 UI 按原题主要布局修订，并按用户确认采用浅色主题：雾蓝灰背景、暖白面板、石墨灰文字与深雾岛蓝操作。保持紧凑图片列表、左侧完整制作面板、右侧统一结果卡片，以及轻量悬停、按压和处理中动画，支持减少动态效果。模板摄影已本地嵌入 SVG，来源及许可见 [素材说明](assets/demo/SOURCES.md)，上传样例保持不变。
 
 阶段五原定稿存在参考布局落实不足的问题，其结论已由本轮 [UI 修订记录](docs/ui-reference-revision.md) 更新。本轮仍按功能初稿、Taste 四类评审、Impeccable 定点修改和三轮固定版式比较执行。阶段七保持暂停，不继续独立交付验收或打包。
 

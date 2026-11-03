@@ -35,8 +35,8 @@
 }
 
 .filters a[aria-current='page'] {
-  color: var(--accent-ink);
-  background: var(--accent);
+  color: var(--accent);
+  background: var(--raised);
 }
 
 .card {
