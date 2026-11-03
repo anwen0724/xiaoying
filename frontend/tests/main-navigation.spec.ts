@@ -7,6 +7,7 @@ test('materials loading shell uses the current material naming', async ({ reques
   const html = await response.text();
   expect(html).toContain('aria-label="正在加载素材页面"');
   expect(html).toContain('正在加载素材…');
+  expect(html).toContain('class="collection-title">我的素材</h1>');
   expect(html).not.toContain('我的制作记录');
   expect(html).not.toContain('正在加载记录页面');
 });
@@ -24,6 +25,7 @@ for (const width of [1440, 390, 320]) {
     await expect(materials).not.toHaveAttribute('aria-current');
     await expect(catalog).toHaveCSS('font-size', '16px');
     await expect(catalog).toHaveCSS('font-weight', '600');
+    await expect(page.getByRole('heading', { name: '模板库', exact: true })).toHaveCSS('font-size', '20px');
     expect((await page.getByRole('banner').boundingBox())!.height).toBe(width > 1000 ? 65 : 113);
     if (width > 1000) {
       const brand = (await page.getByRole('link', { name: '小影素材制作，返回模板库' }).boundingBox())!;
@@ -34,6 +36,7 @@ for (const width of [1440, 390, 320]) {
     await materials.focus();
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/history$/);
+    await expect(page.getByRole('heading', { name: '我的素材', exact: true })).toHaveCSS('font-size', '20px');
     await expect(materials).toHaveAttribute('aria-current', 'page');
     await expect(catalog).not.toHaveAttribute('aria-current');
     await page.getByRole('link', { name: '创意设计', exact: true }).click();

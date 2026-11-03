@@ -83,6 +83,10 @@ h1 {
   font-weight: 600;
 }
 
+h1.collection-title {
+  font-size: 20px;
+}
+
 h2 {
   font-size: 17px;
   font-weight: 600;

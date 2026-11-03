@@ -11,7 +11,7 @@ export async function TemplateCatalog({ category }: { category?: string }) {
     <>
       <div className={styles.catalogHeading}>
         <div>
-          <h1>模板库</h1>
+          <h1 className="collection-title">模板库</h1>
         </div>
       </div>
       {categories.status === 'fulfilled' ? (

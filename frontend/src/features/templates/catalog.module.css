@@ -5,10 +5,6 @@
   margin-bottom: 12px;
 }
 
-.catalogHeading h1 {
-  font-size: 20px;
-}
-
 .filters {
   display: flex;
   flex-wrap: wrap;

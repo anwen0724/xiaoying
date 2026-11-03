@@ -12,7 +12,7 @@ export async function MaterialHistory({ category }: { category?: string }) {
     <>
       <div className="page-heading">
         <div>
-          <h1>我的素材</h1>
+          <h1 className="collection-title">我的素材</h1>
           <p className="subtitle">查看不同模板的任务、进度与制作结果。</p>
         </div>
       </div>
