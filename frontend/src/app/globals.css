@@ -261,6 +261,35 @@ select {
   top: 8px;
 }
 
+@media (min-width: 1001px) {
+  body:has(.creation-layout) {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100dvh;
+  }
+
+  .canvas:has(.creation-layout) {
+    width: 100%;
+    min-height: 0;
+  }
+
+  .creation-layout {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .creation-input {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+
+  .creation-input > * {
+    flex-shrink: 0;
+  }
+}
+
 @media (max-width: 1000px) {
   .catalog-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));

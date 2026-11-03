@@ -68,7 +68,8 @@ for (const width of [1440, 768, 390]) {
     expect((await history.boundingBox())!.height).toBe(initialHeight);
     await list.evaluate((element) => { element.scrollTop = 0; });
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
+    if (width > 1000) expect(await page.evaluate(() => scrollY)).toBe(0);
+    else expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
     expect((await page.getByRole('banner').boundingBox())!.y).toBe(0);
     await page.screenshot({ path: `${directory}/scrolled-${width}.png` });
     await page.evaluate(() => window.scrollTo(0, 0));

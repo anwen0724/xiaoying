@@ -6,8 +6,8 @@
 .history.templateHistory {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - 120px);
-  min-height: 360px;
+  height: 100%;
+  min-height: 0;
 }
 
 .templateHistory .historyHeading, .templateHistory .allRecords {
