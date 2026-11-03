@@ -88,6 +88,8 @@
   border-radius: 10px;
   min-width: 0;
   overflow: hidden;
+  box-shadow: 0 2px 6px rgb(40 60 74 / 5%);
+  transition: transform 200ms ease, box-shadow 200ms ease;
 }
 
 .media {
@@ -113,6 +115,21 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.result > img {
+  transition: transform 200ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 16px rgb(40 60 74 / 12%);
+  }
+
+  .card:hover .result > img {
+    transform: scale(1.02);
+  }
 }
 
 .taskState {
@@ -158,7 +175,9 @@
 
 .cardMeta {
   padding: 12px 14px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--glass-edge);
+  background: linear-gradient(135deg, rgb(255 255 255 / 86%), rgb(226 240 249 / 72%) 55%, rgb(199 220 234 / 62%));
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 80%);
 }
 
 .cardHeading {
