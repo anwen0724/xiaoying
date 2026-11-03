@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { coast, finishResponseAndRender, gate, ignoreTransportCancellation, mountain, openCreation, readyImage } from './helpers';
+import { chooseIdentity, coast, finishResponseAndRender, gate, ignoreTransportCancellation, mountain, openCreation, readyImage } from './helpers';
 
 test('a replaced upload cannot overwrite the replacement even if cancellation is ignored', async ({ page }) => {
   await ignoreTransportCancellation(page);
@@ -46,8 +46,8 @@ test('switching identity invalidates an old upload and clears private form state
   await openCreation(page);
   await page.getByLabel('图片 1', { exact: true }).setInputFiles(mountain);
   await started.promise;
-  await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
-  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-bob');
+  await chooseIdentity(page, 'demo-bob');
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('阿远');
   const lateResponse = page.waitForResponse('**/api/assets');
   release.release();
   await delivered.promise;
@@ -81,8 +81,8 @@ test('pending submission is single-flight and a late receipt cannot enter anothe
   await started.promise;
   await expect(page.getByRole('button', { name: '正在提交…', exact: true })).toBeDisabled();
   await expect(page.getByLabel('图片 1', { exact: true })).toBeDisabled();
-  await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
-  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-bob');
+  await chooseIdentity(page, 'demo-bob');
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('阿远');
   const lateResponse = page.waitForResponse('**/api/tasks');
   release.release();
   await delivered.promise;

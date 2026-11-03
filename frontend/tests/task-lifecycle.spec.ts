@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { finishResponseAndRender, gate, ignoreTransportCancellation, openCreation } from './helpers';
+import { chooseIdentity, finishResponseAndRender, gate, ignoreTransportCancellation, openCreation } from './helpers';
 import { failedTask, taskFixture } from './fixtures/tasks';
 
 for (const change of ['identity', 'template'] as const) {
@@ -26,8 +26,8 @@ for (const change of ['identity', 'template'] as const) {
     await expect(page.getByRole('article', { name: `任务 ${task.id}`, exact: true })).toBeVisible();
     originalScope = false;
     if (change === 'identity') {
-      await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
-      await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-bob');
+      await chooseIdentity(page, 'demo-bob');
+      await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('阿远');
     } else {
       await page.getByRole('link', { name: '模板库', exact: true }).click();
       await page.getByRole('link', { name: /海边双拼/ }).click();
@@ -120,8 +120,8 @@ test('status 401 clears task data and requires choosing identity again', async (
   await page.route('**/api/tasks/active', (route) => route.fulfill({ json: { items: [taskFixture(55)] } }));
   await page.route('**/api/tasks/status?*', (route) => route.fulfill({ status: 401, json: { code: 'UNAUTHORIZED', message: '会话失效' } }));
   await page.goto('/templates/mountain-card');
-  await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
+  await chooseIdentity(page, 'demo-alice');
   await expect(page.getByText('会话已失效，请重新选择身份。', { exact: true })).toBeVisible();
   await expect(page.getByRole('article')).toHaveCount(0);
-  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('');
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('选择身份');
 });

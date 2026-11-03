@@ -1,3 +1,4 @@
+import { chooseIdentity } from './helpers';
 import { expect, test } from '@playwright/test';
 import path from 'node:path';
 
@@ -7,8 +8,8 @@ test('real uploads create distinct tasks only through explicit submission', asyn
     if (new URL(request.url()).pathname === '/api/tasks' && request.method() === 'POST') requests.push(request.method());
   });
   await page.goto('/templates/inspiration-grid');
-  await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+  await chooseIdentity(page, 'demo-alice');
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('小禾');
   for (const [index, file] of ['mountain.png', 'coast.png', 'sunset.jpg'].entries()) {
     await page.getByRole('region', { name: '制作区域', exact: true })
       .getByLabel(`图片 ${index + 1}`, { exact: true }).setInputFiles(path.resolve('../assets/demo/inputs', file));

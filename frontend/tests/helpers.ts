@@ -4,6 +4,12 @@ import path from 'node:path';
 export const mountain = path.resolve('../assets/demo/inputs/mountain.png');
 export const coast = path.resolve('../assets/demo/inputs/coast.png');
 
+export async function chooseIdentity(page: Page, id: 'demo-alice' | 'demo-bob' | '') {
+  const names = { 'demo-alice': '小禾', 'demo-bob': '阿远', '': '选择身份' };
+  await page.getByRole('combobox', { name: '演示身份' }).click();
+  await page.getByRole('option', { name: names[id], exact: true }).click();
+}
+
 export function gate() {
   let release = () => {};
   const promise = new Promise<void>((resolve) => { release = resolve; });
@@ -12,8 +18,8 @@ export function gate() {
 
 export async function openCreation(page: Page) {
   await page.goto('/templates/mountain-card');
-  await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+  await chooseIdentity(page, 'demo-alice');
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('小禾');
 }
 
 export async function readyImage(page: Page) {

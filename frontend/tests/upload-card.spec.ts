@@ -20,7 +20,7 @@ test('upload tile retains full filename and failure recovery on mobile', async (
   await page.goto('/templates/travel-duo');
   const slot = page.getByRole('group', { name: '图片 1', exact: true });
   const input = slot.getByLabel('图片 1', { exact: true });
-  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('小禾');
   await expect(input).toBeEnabled();
   const name = '这是一张需要保留完整文件名并且能够自动换行的山野风景图片.png';
   await input.setInputFiles({ name, mimeType: 'image/png', buffer: await readFile(mountain) });

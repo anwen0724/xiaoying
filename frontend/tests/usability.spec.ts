@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { gate, mountain, openCreation, readyImage } from './helpers';
+import { chooseIdentity, gate, mountain, openCreation, readyImage } from './helpers';
 import { taskFixture } from './fixtures/tasks';
 import { mkdir, readFile } from 'node:fs/promises';
 
@@ -21,8 +21,8 @@ for (const width of [1440, 390]) {
     await expect(prompt).toBeVisible();
     expect(chooserCount).toBe(0);
     await prompt.getByRole('button', { name: '取消', exact: true }).click();
-    await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+    await chooseIdentity(page, 'demo-alice');
+    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('小禾');
     await expect(input).toBeEnabled();
 
     // Test the border padding, icon/text area and lower padding through real clicks.
@@ -149,8 +149,8 @@ for (const [templateId, count] of [['travel-duo', 2], ['inspiration-grid', 3]] a
   test(`${count} uploads with long filenames can be submitted by keyboard on a small screen`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/templates/${templateId}`);
-    await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+    await chooseIdentity(page, 'demo-alice');
+    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('小禾');
     for (let index = 1; index <= count; index++) {
       await page.getByLabel(`图片 ${index}`, { exact: true }).setInputFiles({
         name: `${'long-travel-photo-'.repeat(8)}${index}.png`, mimeType: 'image/png', buffer: await readFile(mountain),

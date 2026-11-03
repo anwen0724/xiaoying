@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { failedTask } from './fixtures/tasks';
-import { mountain } from './helpers';
+import { chooseIdentity, mountain } from './helpers';
 
 for (const width of [1440, 768, 390]) {
   test(`identity prompt and bounded history at ${width}px`, async ({ page }) => {
@@ -37,8 +37,8 @@ for (const width of [1440, 768, 390]) {
     await expect(prompt).toBeVisible();
     await prompt.getByRole('button', { name: '去选择身份', exact: true }).click();
     await expect(identity).toBeFocused();
-    await identity.selectOption('demo-alice');
-    await expect(identity).toHaveValue('demo-alice');
+    await chooseIdentity(page, 'demo-alice');
+    await expect(identity).toHaveText('小禾');
     await expect(identity).toBeEnabled();
     await expect(page.getByText('当前身份：小禾', { exact: true })).toHaveCount(0);
     const picker = page.waitForEvent('filechooser');

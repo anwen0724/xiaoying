@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { mountain, openCreation, readyImage } from './helpers';
+import { chooseIdentity, mountain, openCreation, readyImage } from './helpers';
 import { taskFixture } from './fixtures/tasks';
 
 test('file size and empty content are rejected locally; upload failure can retry', async ({ page }) => {
@@ -32,7 +32,7 @@ test('expired session clears assets and requires choosing identity again', async
   await expect(page.getByText('会话已失效，请重新选择身份。', { exact: true })).toBeVisible();
   await expect(page.getByText('已选 0 / 1 张', { exact: true })).toBeVisible();
   await expect(page.getByLabel('图片 1', { exact: true })).toBeDisabled();
-  await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
+  await chooseIdentity(page, 'demo-bob');
   await expect(page.getByLabel('图片 1', { exact: true })).toBeEnabled();
 });
 

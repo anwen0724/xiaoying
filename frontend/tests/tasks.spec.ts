@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { coast, openCreation, readyImage } from './helpers';
+import { chooseIdentity, coast, openCreation, readyImage } from './helpers';
 
 test('each accepted task remains visible after the next submission and material removal', async ({ page }) => {
   await openCreation(page);
@@ -35,8 +35,8 @@ test('records survive refresh and personal history includes other templates', as
   await expect(page).toHaveURL(/\/history$/);
   await expect(page.getByRole('article', { name: `任务 ${id}`, exact: true })).toBeVisible();
   await expect(page.getByRole('article', { name: `任务 ${otherId}`, exact: true })).toContainText('海边双拼');
-  await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
-  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-bob');
+  await chooseIdentity(page, 'demo-bob');
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('阿远');
   await expect(page.getByRole('article', { name: `任务 ${id}`, exact: true })).toHaveCount(0);
 });
 

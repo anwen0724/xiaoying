@@ -1,3 +1,4 @@
+import { chooseIdentity } from './helpers';
 import { test, expect } from '@playwright/test';
 import path from 'node:path';
 
@@ -6,8 +7,8 @@ const coast = path.resolve('../assets/demo/inputs/coast.png');
 
 test('template upload slots validate, preview, replace and remove real files', async ({ page }) => {
   await page.goto('/templates/travel-duo');
-  await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+  await chooseIdentity(page, 'demo-alice');
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('小禾');
   const submit = page.getByRole('button', { name: '开始制作', exact: true });
   await expect(submit).toBeDisabled();
   await page.getByLabel('图片 1', { exact: true }).setInputFiles(mountain);

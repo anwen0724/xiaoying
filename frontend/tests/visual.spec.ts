@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { readyImage } from './helpers';
+import { chooseIdentity, readyImage } from './helpers';
 import { failedTask, taskFixture } from './fixtures/tasks';
 import type { Task } from '../src/features/tasks/types';
 
@@ -33,8 +33,8 @@ for (const width of [1440, 768, 390]) {
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: `../artifacts/phase-5/live/catalog-${width}.png`, fullPage: true });
     await page.getByRole('link', { name: /山野明信片/ }).click();
-    await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+    await chooseIdentity(page, 'demo-alice');
+    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('小禾');
     await readyImage(page);
     const submit = page.getByRole('button', { name: '开始制作', exact: true });
     await submit.focus();

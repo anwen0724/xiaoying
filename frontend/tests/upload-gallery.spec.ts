@@ -19,7 +19,7 @@ for (const width of [1440, 390, 320]) {
     });
     await page.goto('/templates/inspiration-grid');
     const form = page.getByRole('region', { name: '制作区域', exact: true });
-    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('小禾');
     await expect(form.locator('input[type="file"]')).toHaveCount(1);
     await expect(form.getByText(/\d+ \/ \d+ 已准备/)).toHaveCount(0);
     const first = form.getByLabel('图片 1', { exact: true });
@@ -103,7 +103,7 @@ test('batch keeps per-image validation and submits IDs in position order', async
     } });
   });
   await page.goto('/templates/inspiration-grid');
-  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('小禾');
   const form = page.getByRole('region', { name: '制作区域', exact: true });
   const bytes = await readFile(mountain);
   await form.getByLabel('图片 1', { exact: true }).setInputFiles([

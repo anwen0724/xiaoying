@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { readyImage } from './helpers';
+import { chooseIdentity, readyImage } from './helpers';
 import { failedTask, taskFixture } from './fixtures/tasks';
 
 // Fixed content and time let the three review runs compare only the named UI changes.
@@ -42,8 +42,8 @@ for (const width of [1440, 768, 390]) {
     await expect(page.getByRole('combobox', { name: '演示身份' })).toBeEnabled();
     await capture('catalog');
     await page.getByRole('link', { name: /山野明信片/ }).click();
-    await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-alice');
-    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+    await chooseIdentity(page, 'demo-alice');
+    await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveText('小禾');
     await readyImage(page);
     await expect(page.getByRole('article')).toHaveCount(4);
     await expect(page.getByRole('img', { name: '山野明信片制作结果', exact: true })).toBeVisible();

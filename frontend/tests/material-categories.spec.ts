@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { failedTask, taskFixture } from './fixtures/tasks';
-import { finishResponseAndRender, gate, ignoreTransportCancellation } from './helpers';
+import { chooseIdentity, finishResponseAndRender, gate, ignoreTransportCancellation } from './helpers';
 
 const design = Array.from({ length: 23 }, (_, i) => failedTask(1100 + i, {
   templateId: 'minimal-cover', templateTitle: '极简封面',
@@ -105,7 +105,7 @@ test('category changes reject late history and active results; recovery and iden
   await retry.click();
   await expect(retry).toHaveCount(0);
   await expect(page.getByRole('region', { name: '我的素材', exact: true })).toBeFocused();
-  await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
+  await chooseIdentity(page, 'demo-bob');
   await expect(page.getByRole('article')).toHaveCount(0);
   await expect(page.getByText('这个分类还没有制作记录。', { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: '旅行记忆', exact: true })).toHaveAttribute('aria-current', 'page');

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { errorMessage, isAbort } from '../../shared/api/http';
 import { demoUsers } from './api';
 import { useIdentity } from './IdentityProvider';
+import { IdentitySelect } from './IdentitySelect';
 import type { User } from './types';
 import styles from './identity.module.css';
 
@@ -28,15 +29,8 @@ export function IdentityPicker() {
   return (
     <div className={styles.identity}>
       <div className={styles.controls}>
-        <label htmlFor="demo-identity">演示身份</label>
-        <select id="demo-identity" value={user?.id ?? ''}
-          disabled={list.status !== 'ready' || session.status !== 'ready'}
-          onChange={async (event) => { await changeIdentity(event.target.value || null); }}>
-          <option value="">选择身份</option>
-          {list.status === 'ready' && list.users.map((item) => (
-            <option key={item.id} value={item.id}>{item.displayName}</option>
-          ))}
-        </select>
+        <label id="demo-identity-label" htmlFor="demo-identity">演示身份</label>
+        <IdentitySelect users={list.status === 'ready' ? list.users : []} ready={list.status === 'ready'} />
         {user && <button type="button" onClick={async () => { await changeIdentity(null); }}>退出身份</button>}
       </div>
       <div className={styles.status} aria-live="polite">
