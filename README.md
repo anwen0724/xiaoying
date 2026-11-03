@@ -1,6 +1,6 @@
 # 素材制作网站
 
-阶段二至五已完成，阶段六的 CI 配置与本地容器验证已完成。后台提供 Java 接口、MySQL 持久化和三阶段任务执行；页面支持模板浏览、演示身份、图片上传、多任务跟踪、个人历史和结果预览。阶段七正在进行当前版本的交付验收；远程 push 已触发 GitHub Actions，最终结果见验收记录。
+阶段二至五已完成，阶段六的 CI 配置与本地容器验证已完成。后台提供 Java 接口、MySQL 持久化和三阶段任务执行；页面支持模板浏览、演示身份、图片上传、多任务跟踪、个人历史和结果预览。阶段七工程验收已完成，远程 GitHub Actions 全部通过；验收基线为 `00e2e1d`，详细范围见[最终验收记录](docs/final-acceptance.md)。
 
 [阶段四设计](docs/phase-4-design.md) 记录左右分区、个人全部历史、多任务跟踪、查询故障与恢复规则，以及执行证据。
 
@@ -142,7 +142,7 @@ MySQL 的账号初始化变量仅在空数据卷生效。已有库修改密码�
 docker compose --profile test run --rm --no-deps frontend-check node ../scripts/smoke.mjs
 ```
 
-该脚本创建三个耗时任务和一个指定阶段失败的任务。它验证上传、两线程并发、排队、退出会话后继续执行、用户隔离和结果读取。脚本会向演示账号新增记录，并写入被 Git 忽略的 `artifacts/smoke.json`。
+为观察两个执行、一个排队，先等待已有后台任务结束，再运行该脚本。该脚本创建三个耗时任务和一个指定阶段失败的任务。它验证上传、两线程并发、排队、退出会话后继续执行、用户隔离和结果读取。脚本会向演示账号新增记录，并写入被 Git 忽略的 `artifacts/smoke.json`。
 
 手动创建任务时，可省略 simulation 使用默认配置，也可传入：
 
@@ -221,7 +221,7 @@ docker compose -p xiaoying-ci --profile test --profile browser down --volumes --
 
 阶段六当时通过 actionlint、Compose 检查、16 项 Java 测试、43 项浏览器测试、1 项 HTTP 渲染测试、smoke 及前后端构建，并核对 smoke 任务的 MySQL 记录。失败退出、JUnit 报告和隔离环境清理也已验证。后续分类与 UI 修改按影响范围验证，证据见 [UI 修订记录](docs/ui-reference-revision.md)；上述数量不是当前测试总数，也不代表当前版本已完成全量回归或最终验收。
 
-远程仓库为 [anwen0724/xiaoying](https://github.com/anwen0724/xiaoying)。2026-11-03 的 push 已触发 [首次 Actions 运行](https://github.com/anwen0724/xiaoying/actions/runs/41588584850)，当前结果与验收范围见[最终验收记录](docs/final-acceptance.md)。阶段六文档保留当时未配置远程的历史情况。
+远程仓库为 [anwen0724/xiaoying](https://github.com/anwen0724/xiaoying)。2026-11-03 的 [Actions 验收运行](https://github.com/anwen0724/xiaoying/actions/runs/41589698488)（`00e2e1d`）全部通过：18 项 Java、86 项浏览器、1 项 HTTP 渲染、smoke，以及前端 lint／类型检查／构建和 Java 构建。首次失败的旧断言及修正记录见[最终验收记录](docs/final-acceptance.md)。阶段六文档保留当时未配置远程的历史情况。
 
 ## 更新与回滚
 
@@ -264,7 +264,7 @@ docker compose -p xiaoying-acceptance --profile test --profile browser down --vo
 
 ## 完成范围与限制
 
-阶段二基础服务、阶段三制作入口、阶段四多任务跟踪与历史、阶段五页面可用性与定点 UI 优化已实现。阶段六已交付 CI 配置并完成本地容器验证。远程仓库已连接并触发 Actions；阶段七正在核对当前版本的最终验收，详见[任务清单](docs/requirements-and-task-list.md)。
+阶段二基础服务、阶段三制作入口、阶段四多任务跟踪与历史、阶段五页面可用性与定点 UI 优化已实现。阶段六已交付 CI 配置并完成本地容器验证。远程 Actions 及阶段七正式环境验收已通过，详见[任务清单](docs/requirements-and-task-list.md)。
 
 当前只运行一个 Java 实例。会话和执行器队列在内存中；重启后会话失效，原有非终态任务不会恢复执行。历史及已有文件保留。未实现提交幂等、自动重试、任务取消、素材清理、账号注册或真实图片合成。文件与 MySQL 没有分布式事务，进程崩溃可能留下未引用文件。
 
@@ -276,7 +276,7 @@ docker compose -p xiaoying-acceptance --profile test --profile browser down --vo
 
 当前 UI 按原题主要布局修订，并按用户确认采用浅色主题：雾蓝灰背景、暖白面板、石墨灰文字与深雾岛蓝操作。保持紧凑图片列表、左侧完整制作面板、右侧统一结果卡片，以及轻量悬停、按压和处理中动画，支持减少动态效果。模板摄影已本地嵌入 SVG，来源及许可见 [素材说明](assets/demo/SOURCES.md)，上传样例保持不变。
 
-阶段五原定稿存在参考布局落实不足的问题，其结论已由本轮 [UI 修订记录](docs/ui-reference-revision.md) 更新。本轮仍按功能初稿、Taste 四类评审、Impeccable 定点修改和三轮固定版式比较执行。阶段七已于 2026-11-03 恢复，采用当前版式完成交付验收，不再重排页面。
+阶段五原定稿存在参考布局落实不足的问题，其结论已由本轮 [UI 修订记录](docs/ui-reference-revision.md) 更新。本轮仍按功能初稿、Taste 四类评审、Impeccable 定点修改和三轮固定版式比较执行。阶段七已于 2026-11-03 恢复并完成工程验收，沿用当前版式，没有重排页面。
 
 使用 Codex 辅助开发。先从题目拆阶段，由用户确定身份、线程数、模板复用和编码规则，再维护设计、库表及接口三份文档。实现时按行为编写失败测试，再增加业务代码，在真实 MySQL 和容器中验证。例如，会话测试先暴露中文种子编码错误，修复 SQL 会话字符集后通过；请求类型测试发现数字被转换成字符串，修复 Jackson 转换规则后通过。验收结果同步至文档。
 
