@@ -430,7 +430,7 @@ docker compose --profile test run --rm --no-deps frontend-check node ../scripts/
 
 该命令在容器内运行 [smoke 脚本](../scripts/smoke.mjs)。脚本从仓库读取 `assets/demo/inputs/mountain.png`，通过会话 Cookie 上传素材，使用返回的素材 ID 创建任务，再读取状态、历史和文件。任务 ID 由 Java 实际生成；不依赖本机绝对路径或预置任务 ID。
 
-脚本会创建演示记录。三个成功任务的 stepDelayMs 为 1000，另一个任务在 MOCK_GENERATION 指定失败。分别传入其他阶段名可复现另外两个失败点，字段规则见第 6 节。独立验收项目的完整命令见 [README](../README.md#独立交付验收)。
+脚本会创建演示记录。三个成功任务的 stepDelayMs 为 1000，另一个任务在 MOCK_GENERATION 指定失败。分别传入其他阶段名可复现另外两个失败点，字段规则见第 6 节。操作步骤见 [README 演示方法](../README.md#演示方法)。
 
 前端先确认身份，再读取历史和 active，最后按未完成 ID 查询 status；不因查询失败自动重建任务。
 
@@ -446,7 +446,7 @@ docker compose --profile test run --rm --no-deps frontend-check node ../scripts/
 - 所有个人记录及二进制接口检查归属，不返回磁盘路径。
 - 查询、预览失败不改变任务状态；后续查询不能使终态回退。
 
-以上契约已通过源码核对、后端集成测试与容器 HTTP 场景验证。阶段二当时 16 项后端测试覆盖三阶段成功／失败、并发队列、同时间分页、用户隔离、参数边界与文件缺失；smoke 脚本覆盖 Cookie、multipart 和二进制同源转发。阶段二初始证据见[阶段二设计第 11 节](phase-2-design.md#11-现状执行条件和变更记录)，阶段六结果见[阶段六设计](phase-6-design.md)，当前交付验证见[最终验收记录](final-acceptance.md)。
+以上契约已通过源码核对、后端集成测试与容器 HTTP 场景验证。阶段二当时 16 项后端测试覆盖三阶段成功／失败、并发队列、同时间分页、用户隔离、参数边界与文件缺失；smoke 脚本覆盖 Cookie、multipart 和二进制同源转发。阶段二初始证据见[阶段二设计第 11 节](phase-2-design.md#11-现状执行条件和变更记录)，阶段六结果见[阶段六设计](phase-6-design.md)，当前版本与 CI 结果见 [README](../README.md#构建测试与-ci)。
 
 ## 10. 变更记录
 
