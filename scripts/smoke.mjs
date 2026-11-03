@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { setTimeout as delay } from "node:timers/promises";
 
@@ -35,20 +34,25 @@ async function json(path, cookie) {
   return response.json();
 }
 
-async function bytesHash(path, cookie) {
+async function imageBytes(path, cookie) {
   const response = await request(path, { cookie });
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("cache-control"), "no-store");
-  return createHash("sha256").update(Buffer.from(await response.arrayBuffer())).digest("hex");
+  assert.match(response.headers.get("content-type"), /^image\//);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  assert.ok(bytes.length > 0);
+  return bytes;
 }
 
 if (process.argv.includes("--verify-persistence")) {
   const saved = JSON.parse(await readFile(evidenceFile, "utf8"));
   const cookie = await login("demo-alice");
-  assert.equal(await bytesHash(saved.assetUrl, cookie), saved.assetHash);
-  assert.equal(await bytesHash(saved.resultUrl, cookie), saved.resultHash);
-  for (const id of saved.successIds) {
-    assert.equal((await json(`/api/tasks/${id}`, cookie)).status, "SUCCEEDED");
+  assert.ok(saved.snapshots && saved.resultBytes, "Run smoke without --verify-persistence before checking this version");
+  assert.deepEqual(await imageBytes(saved.assetUrl, cookie),
+    await readFile(new URL("../assets/demo/inputs/mountain.png", import.meta.url)));
+  assert.deepEqual(await imageBytes(saved.resultUrl, cookie), Buffer.from(saved.resultBytes, "base64"));
+  for (const snapshot of saved.snapshots) {
+    assert.deepEqual(await json(`/api/tasks/${snapshot.id}`, cookie), snapshot);
   }
   assert.equal((await json("/api/templates")).items.length, 4);
   console.log("PASS: container recreation retained history, files and four template seeds");
@@ -68,7 +72,7 @@ if (process.argv.includes("--verify-persistence")) {
   const uploaded = await request("/api/assets", { method: "POST", cookie: alice, body: form });
   assert.equal(uploaded.status, 201);
   const asset = await uploaded.json();
-  assert.equal(await bytesHash(asset.previewUrl, alice), createHash("sha256").update(image).digest("hex"));
+  assert.deepEqual(await imageBytes(asset.previewUrl, alice), image);
   assert.equal((await request(asset.previewUrl, { cookie: bob })).status, 404);
 
   async function create(simulation) {
@@ -123,9 +127,9 @@ if (process.argv.includes("--verify-persistence")) {
     successIds,
     failedId: failed.id,
     assetUrl: asset.previewUrl,
-    assetHash: await bytesHash(asset.previewUrl, alice),
     resultUrl,
-    resultHash: await bytesHash(resultUrl, alice),
+    resultBytes: (await imageBytes(resultUrl, alice)).toString("base64"),
+    snapshots: await Promise.all([...successIds, failed.id].map((id) => json(`/api/tasks/${id}`, alice))),
   };
   await mkdir(new URL("../artifacts/", import.meta.url), { recursive: true });
   await writeFile(evidenceFile, JSON.stringify(evidence, null, 2));

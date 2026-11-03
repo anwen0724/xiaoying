@@ -18,7 +18,7 @@
 
 [阶段五](phase-5-design.md) 沿用全部接口。前端在历史和 active 均完成读取、且没有记录或不可访问记录时显示空历史；active 失败时保留恢复提示。上传、历史和结果图片的重试只补充键盘焦点去向，没有改变 HTTP 契约或后端状态规则。
 
-开发入口为 `http://localhost:3000`，Next.js 将请求转发到 Java。业务前缀为 `/api`，公开素材前缀为 `/demo`。浏览器不直接访问容器服务名。
+默认入口为 `http://localhost:3000`，可用 `FRONTEND_PORT` 修改宿主机端口。Next.js 将请求转发到 Java。业务前缀为 `/api`，公开素材前缀为 `/demo`。浏览器不直接访问容器服务名。
 
 ## 2. 通用协议
 
@@ -404,7 +404,7 @@ cursor 解码失败、字段错误或筛选／用户不匹配返回 400／INVALI
 
 items 是当前用户可见的 Task，包含已经成功或失败的任务，顺序遵循请求 ID 顺序。missingIds 记录不存在或不属于当前用户的请求 ID，两种情况不作区分。格式正确且全部不可见时仍返回 200。
 
-前端后续应从跟踪集合移除终态和 missingIds，但不能将 missingIds 标为任务执行失败。请求异常时保留已有快照。active、status 是固定路由，不作为任务 ID 解析。
+前端从跟踪集合移除终态和 missingIds，不将 missingIds 标为任务执行失败。请求异常时保留已有快照。active、status 是固定路由，不作为任务 ID 解析。
 
 ### 6.6 `GET /api/tasks/{id}/result`
 
@@ -420,43 +420,19 @@ items 是当前用户可见的 Task，包含已经成功或失败的任务，顺
 
 成功返回 200 和 image/svg+xml。未登记路径、其他目录和路径越界返回 404。用户上传和任务私有结果不通过这个接口提供。公开预置结果用于展示模拟样例，不能据此判断某个任务已成功。
 
-## 8. 文档调用示例
+## 8. 容器调用示例
 
-以下 PowerShell 7 示例供手动调用。输入路径指向现有示例文件；返回 ID 由实际服务生成。本轮在容器内执行了等价的 Node.js HTTP 场景脚本 `scripts/smoke.mjs`，未直接运行这段 PowerShell 示例。
+启动默认 Compose 项目后，在仓库根目录执行：
 
-```powershell
-$baseUri = 'http://localhost:3000'
-$identityBody = @{ userId = 'demo-alice' } | ConvertTo-Json
-
-Invoke-RestMethod -Method Post -Uri "$baseUri/api/session" `
-    -ContentType 'application/json' -Body $identityBody `
-    -SessionVariable demoSession
-
-$upload = Invoke-RestMethod -Method Post -Uri "$baseUri/api/assets" `
-    -WebSession $demoSession -Form @{
-        templateId = 'mountain-card'
-        file = Get-Item 'C:\all\work\xiaoying\assets\demo\inputs\mountain.png'
-    }
-
-$taskBody = @{
-    templateId = 'mountain-card'
-    assetIds = @($upload.id)
-    simulation = @{
-        stepDelayMs = 3000
-        failAtStage = $null
-    }
-} | ConvertTo-Json -Depth 4
-
-$task = Invoke-RestMethod -Method Post -Uri "$baseUri/api/tasks" `
-    -WebSession $demoSession -ContentType 'application/json' -Body $taskBody
-
-Invoke-RestMethod -Uri "$baseUri/api/tasks/$($task.id)" -WebSession $demoSession
-Invoke-RestMethod -Uri "$baseUri/api/tasks?limit=20" -WebSession $demoSession
+```sh
+docker compose --profile test run --rm --no-deps frontend-check node ../scripts/smoke.mjs
 ```
 
-演示指定阶段失败时，将 failAtStage 改为对应枚举后创建新任务。演示排队时连续创建三个较长耗时任务。演示用户隔离时使用另一个 WebSession 选择 demo-bob，再读取原任务，预期 404。
+该命令在容器内运行 [smoke 脚本](../scripts/smoke.mjs)。脚本从仓库读取 `assets/demo/inputs/mountain.png`，通过会话 Cookie 上传素材，使用返回的素材 ID 创建任务，再读取状态、历史和文件。任务 ID 由 Java 实际生成；不依赖本机绝对路径或预置任务 ID。
 
-前端后续应先确认身份，再读取历史和 active，最后按未完成 ID 查询 status；不因查询失败自动重建任务。
+脚本会创建演示记录。三个成功任务的 stepDelayMs 为 1000，另一个任务在 MOCK_GENERATION 指定失败。分别传入其他阶段名可复现另外两个失败点，字段规则见第 6 节。独立验收项目的完整命令见 [README](../README.md#独立交付验收)。
+
+前端先确认身份，再读取历史和 active，最后按未完成 ID 查询 status；不因查询失败自动重建任务。
 
 ## 9. 实现验证清单
 
@@ -470,7 +446,7 @@ Invoke-RestMethod -Uri "$baseUri/api/tasks?limit=20" -WebSession $demoSession
 - 所有个人记录及二进制接口检查归属，不返回磁盘路径。
 - 查询、预览失败不改变任务状态；后续查询不能使终态回退。
 
-以上契约已通过源码核对、后端集成测试与容器 HTTP 场景验证。16 项后端测试覆盖三阶段成功／失败、并发队列、同时间分页、用户隔离、参数边界与文件缺失；smoke 脚本覆盖 Cookie、multipart 和二进制同源转发。完整证据及未完成的前端范围见[阶段二设计第 11 节](phase-2-design.md#11-现状执行条件和变更记录)。
+以上契约已通过源码核对、后端集成测试与容器 HTTP 场景验证。16 项后端测试覆盖三阶段成功／失败、并发队列、同时间分页、用户隔离、参数边界与文件缺失；smoke 脚本覆盖 Cookie、multipart 和二进制同源转发。阶段二初始证据见[阶段二设计第 11 节](phase-2-design.md#11-现状执行条件和变更记录)，前端及当前验证状态见[阶段六设计](phase-6-design.md)。
 
 ## 10. 变更记录
 

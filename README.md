@@ -1,6 +1,6 @@
 # 素材制作网站
 
-阶段二至五已完成，阶段六的 CI 配置与本地容器验证已完成。后台提供 Java 接口、MySQL 持久化和三阶段任务执行；页面支持模板浏览、演示身份、图片上传、多任务跟踪、个人历史和结果预览。GitHub 托管运行未验证；阶段七保持暂停，尚未完成当前版本的最终交付验收。
+阶段二至五已完成，阶段六的 CI 配置与本地容器验证已完成。后台提供 Java 接口、MySQL 持久化和三阶段任务执行；页面支持模板浏览、演示身份、图片上传、多任务跟踪、个人历史和结果预览。阶段七正在进行当前版本的交付验收；远程 push 已触发 GitHub Actions，最终结果见验收记录。
 
 [阶段四设计](docs/phase-4-design.md) 记录左右分区、个人全部历史、多任务跟踪、查询故障与恢复规则，以及执行证据。
 
@@ -106,6 +106,16 @@ MySQL 的账号初始化变量仅在空数据卷生效。已有库修改密码�
 | `/api/tasks/active`、`/api/tasks/status` | 全部未完成任务、指定 ID 的最新状态 |
 | `/api/tasks/{id}/result` | 本人成功任务的 SVG 结果 |
 
+主要请求与响应字段如下；完整规则、示例与错误码维护在接口文档中。
+
+| 操作 | 请求字段 | 响应字段 |
+| --- | --- | --- |
+| 选择身份 | `userId` | `id`、`displayName`，并设置会话 Cookie |
+| 上传图片 | multipart：`templateId`、`file` | `id`、`originalName`、`mimeType`、`sizeBytes`、`previewUrl` |
+| 创建任务 | `templateId`、有序 `assetIds`、可选 `simulation` | 202；任务 `id`、`status`、`stage`、`version`、时间、`resultUrl`、`failure` |
+| 查询任务 | 路径中的任务 ID | 同上，详情另含有序 `steps`；失败信息含 `code`、`stage`、`message` |
+| 查询历史 | 可选 `templateId`、`category`、`limit`、`cursor` | `items`、`nextCursor` |
+
 任务按 `MATERIAL_CHECK → MOCK_GENERATION → RESULT_FINALIZATION` 执行，状态为 `QUEUED → RUNNING → SUCCEEDED/FAILED`。两个工作线程并行执行，其他任务排队；队列满时将新登记任务记录为调度失败。HTTP 请求线程不执行制作。
 
 每个阶段等待配置的耗时。素材检查再次验证输入；模拟生成读取预置 SVG；结果整理将结果副本保存至私有目录。阶段失败后，后续步骤标记为 SKIPPED。短事务一起更新任务和步骤，递增 version。查询不推进执行，终态不因结果文件读取失败而回退。
@@ -126,7 +136,7 @@ MySQL 的账号初始化变量仅在空数据卷生效。已有库修改密码�
 
 状态接口出错时，页面保留上次确认的状态，显示“状态暂时无法更新”并暂停自动查询。网络恢复后点击“恢复查询”。这不表示任务执行失败。成功任务的图片读取失败时，点击“重新加载图片”，任务仍保持成功。
 
-接口文档第 8 节提供 PowerShell 请求示例。容器内可执行完整示例：
+接口文档第 8 节提供容器调用说明。容器内可执行完整示例：
 
 ```sh
 docker compose --profile test run --rm --no-deps frontend-check node ../scripts/smoke.mjs
@@ -211,7 +221,7 @@ docker compose -p xiaoying-ci --profile test --profile browser down --volumes --
 
 阶段六当时通过 actionlint、Compose 检查、16 项 Java 测试、43 项浏览器测试、1 项 HTTP 渲染测试、smoke 及前后端构建，并核对 smoke 任务的 MySQL 记录。失败退出、JUnit 报告和隔离环境清理也已验证。后续分类与 UI 修改按影响范围验证，证据见 [UI 修订记录](docs/ui-reference-revision.md)；上述数量不是当前测试总数，也不代表当前版本已完成全量回归或最终验收。
 
-当前未配置远程仓库。GitHub 托管 runner 的事件触发、检出和报告上传未验证；本地容器结果不能记为 GitHub Actions 已通过。阶段六的实际检查结果见[验证记录](docs/phase-6-design.md#6-验证记录)。
+远程仓库为 [anwen0724/xiaoying](https://github.com/anwen0724/xiaoying)。2026-11-03 的 push 已触发 [首次 Actions 运行](https://github.com/anwen0724/xiaoying/actions/runs/41588584850)，当前结果与验收范围见[最终验收记录](docs/final-acceptance.md)。阶段六文档保留当时未配置远程的历史情况。
 
 ## 更新与回滚
 
@@ -233,7 +243,7 @@ docker compose --profile test run --rm --no-deps frontend-check node ../scripts/
 在新解压的源码目录中，将 `.env.example` 复制为 `.env`，把 `FRONTEND_PORT` 改为未占用端口（例如 3001），然后执行：
 
 ```sh
-docker compose -p xiaoying-acceptance build --no-cache
+docker compose -p xiaoying-acceptance build
 docker compose -p xiaoying-acceptance up -d --wait
 docker compose -p xiaoying-acceptance --profile test run --rm --no-deps frontend-check npm ci
 docker compose -p xiaoying-acceptance --profile browser run --rm --no-deps -e PLAYWRIGHT_BASE_URL=http://frontend:3000 browser-test npm test -- --config playwright.acceptance.config.ts
@@ -242,7 +252,7 @@ docker compose -p xiaoying-acceptance up -d --force-recreate --wait
 docker compose -p xiaoying-acceptance --profile test run --rm --no-deps frontend-check node ../scripts/smoke.mjs --verify-persistence
 ```
 
-命令不启动 frontend-dev。正式页面验证分类、1／2／3 图提交、三阶段失败、多任务、刷新和用户隔离。证据写入 `artifacts/phase-7/` 和 `artifacts/smoke.json`。基础镜像和依赖下载缓存可复用；`--no-cache` 不复用应用构建层。
+命令不启动 frontend-dev。正式页面验证分类、1／2／3 图提交、三阶段失败、多任务、刷新和用户隔离。证据写入 `artifacts/phase-7/` 和 `artifacts/smoke.json`。允许复用 Docker 构建与依赖缓存；源码副本不包含宿主机依赖和构建产物。
 
 保存验收证据后，可删除本次独立环境的数据卷：
 
@@ -254,7 +264,7 @@ docker compose -p xiaoying-acceptance --profile test --profile browser down --vo
 
 ## 完成范围与限制
 
-阶段二基础服务、阶段三制作入口、阶段四多任务跟踪与历史、阶段五页面可用性与定点 UI 优化已实现。阶段六已交付 CI 配置并完成本地容器验证，GitHub 托管运行尚未验证。阶段七最终交付验收待完成，详见[任务清单](docs/requirements-and-task-list.md)。
+阶段二基础服务、阶段三制作入口、阶段四多任务跟踪与历史、阶段五页面可用性与定点 UI 优化已实现。阶段六已交付 CI 配置并完成本地容器验证。远程仓库已连接并触发 Actions；阶段七正在核对当前版本的最终验收，详见[任务清单](docs/requirements-and-task-list.md)。
 
 当前只运行一个 Java 实例。会话和执行器队列在内存中；重启后会话失效，原有非终态任务不会恢复执行。历史及已有文件保留。未实现提交幂等、自动重试、任务取消、素材清理、账号注册或真实图片合成。文件与 MySQL 没有分布式事务，进程崩溃可能留下未引用文件。
 
@@ -266,7 +276,7 @@ docker compose -p xiaoying-acceptance --profile test --profile browser down --vo
 
 当前 UI 按原题主要布局修订，并按用户确认采用浅色主题：雾蓝灰背景、暖白面板、石墨灰文字与深雾岛蓝操作。保持紧凑图片列表、左侧完整制作面板、右侧统一结果卡片，以及轻量悬停、按压和处理中动画，支持减少动态效果。模板摄影已本地嵌入 SVG，来源及许可见 [素材说明](assets/demo/SOURCES.md)，上传样例保持不变。
 
-阶段五原定稿存在参考布局落实不足的问题，其结论已由本轮 [UI 修订记录](docs/ui-reference-revision.md) 更新。本轮仍按功能初稿、Taste 四类评审、Impeccable 定点修改和三轮固定版式比较执行。阶段七保持暂停，不继续独立交付验收或打包。
+阶段五原定稿存在参考布局落实不足的问题，其结论已由本轮 [UI 修订记录](docs/ui-reference-revision.md) 更新。本轮仍按功能初稿、Taste 四类评审、Impeccable 定点修改和三轮固定版式比较执行。阶段七已于 2026-11-03 恢复，采用当前版式完成交付验收，不再重排页面。
 
 使用 Codex 辅助开发。先从题目拆阶段，由用户确定身份、线程数、模板复用和编码规则，再维护设计、库表及接口三份文档。实现时按行为编写失败测试，再增加业务代码，在真实 MySQL 和容器中验证。例如，会话测试先暴露中文种子编码错误，修复 SQL 会话字符集后通过；请求类型测试发现数字被转换成字符串，修复 Jackson 转换规则后通过。验收结果同步至文档。
 
