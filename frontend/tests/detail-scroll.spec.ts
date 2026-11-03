@@ -17,21 +17,20 @@ for (const [width, height, template] of [
     await page.goto(`/templates/${template}`);
     await expect(page.getByRole('article')).toHaveCount(20);
     const left = page.locator('#main-content .creation-input');
+    const content = left.getByRole('region', { name: '模板与上传内容', exact: true });
     const list = page.getByRole('region', { name: '本模板记录列表', exact: true });
     if (width > 1000) {
-      await expect(left).toHaveCSS('scrollbar-width', 'none');
+      await expect(content).toHaveCSS('scrollbar-width', 'none');
       await expect(list).toHaveCSS('scrollbar-width', 'none');
       expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(height);
-      await left.evaluate((element) => { element.scrollTop = element.scrollHeight; });
-      if (template === 'inspiration-grid') {
-        expect(await left.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
-      }
       await expect(left.getByRole('button', { name: '开始制作', exact: true })).toBeInViewport();
-      const leftScroll = await left.evaluate((element) => element.scrollTop);
+      await content.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+      await expect(left.getByRole('button', { name: '开始制作', exact: true })).toBeInViewport();
+      const leftScroll = await content.evaluate((element) => element.scrollTop);
       await list.hover();
       await page.mouse.wheel(0, 500);
       await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
-      expect(await left.evaluate((element) => element.scrollTop)).toBe(leftScroll);
+      expect(await content.evaluate((element) => element.scrollTop)).toBe(leftScroll);
       await list.evaluate((element) => { element.scrollTop = 0; });
       await list.focus();
       await page.keyboard.press('PageDown');

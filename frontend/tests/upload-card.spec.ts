@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { mkdir, readFile } from 'node:fs/promises';
 import { mountain } from './helpers';
 
-test('compact upload card wraps long names and retains failure recovery on mobile', async ({ page }) => {
+test('upload tile retains full filename and failure recovery on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });
   await page.route('**/api/session', (route) => route.fulfill({ json: { id: 'demo-alice', displayName: '小禾' } }));
   await page.route('**/api/tasks/active', (route) => route.fulfill({ json: { items: [] } }));
@@ -29,8 +29,9 @@ test('compact upload card wraps long names and retains failure recovery on mobil
   const filename = slot.getByText(name, { exact: true });
   const bounds = (await filename.boundingBox())!;
   const card = (await slot.boundingBox())!;
-  expect(bounds.x + bounds.width).toBeLessThan(card.x + card.width);
-  expect(bounds.height).toBeGreaterThan(30);
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(card.x + card.width);
+  await expect(filename).toHaveAttribute('title', name);
+  await expect(filename).toHaveCSS('text-overflow', 'ellipsis');
   await slot.getByRole('button', { name: '重试上传图片 1', exact: true }).click();
   await expect(slot.getByText('上传成功', { exact: true })).toBeVisible();
   await expect(input).toBeFocused();
@@ -45,7 +46,7 @@ test('compact upload card wraps long names and retains failure recovery on mobil
   await (await picker).setFiles(mountain);
   await expect(slot.getByText('上传成功', { exact: true })).toBeVisible();
   const secondSlot = page.getByRole('group', { name: '图片 2', exact: true });
-  expect((await slot.boundingBox())!.height).toBe((await secondSlot.boundingBox())!.height);
+  expect((await slot.boundingBox())!.y).toBe((await secondSlot.boundingBox())!.y);
   await page.getByRole('region', { name: '制作区域', exact: true }).screenshot({
     path: '../artifacts/upload-compact/equal-height-390.png',
   });

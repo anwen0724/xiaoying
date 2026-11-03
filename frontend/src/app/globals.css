@@ -233,7 +233,7 @@ select {
   gap: 16px;
   min-width: 0;
   align-self: start;
-  min-height: calc(100dvh - 120px);
+  min-height: 0;
 }
 
 .skeleton {
@@ -279,15 +279,7 @@ select {
   }
 
   .creation-input {
-    height: 100%;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-    scrollbar-width: none;
-  }
-
-  .creation-input > * {
-    flex-shrink: 0;
+    max-height: 100%;
   }
 }
 
