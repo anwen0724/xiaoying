@@ -62,7 +62,8 @@ for (const width of [1440, 768, 390]) {
     await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
     expect(await page.evaluate(() => scrollY)).toBe(pageY);
     expect((await heading.boundingBox())!.y).toBe(headingY);
-    await list.getByRole('button', { name: '加载更多', exact: true }).click();
+    await expect(list.getByRole('button', { name: '加载更多', exact: true })).toHaveCount(0);
+    await list.evaluate((element) => { element.scrollTop = element.scrollHeight; });
     await expect(history.getByRole('article')).toHaveCount(24);
     expect((await history.boundingBox())!.height).toBe(initialHeight);
     await list.evaluate((element) => { element.scrollTop = 0; });

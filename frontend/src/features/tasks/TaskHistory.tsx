@@ -1,14 +1,25 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTasks } from './TaskScope';
 import { TaskCard } from './TaskCard';
 import styles from './tasks.module.css';
 
 export function TaskHistory() {
   const heading = useRef<HTMLHeadingElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  const end = useRef<HTMLDivElement>(null);
   const { cache, templateId, authenticated, controller } = useTasks();
+  const { cursor, read } = cache.history;
+  useEffect(() => {
+    if (!authenticated || !cursor || read.status !== 'idle' || !end.current) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) void controller.loadHistory(true);
+    }, { root: templateId ? content.current : null });
+    observer.observe(end.current);
+    return () => observer.disconnect();
+  }, [authenticated, controller, cursor, read.status, templateId]);
   const title = templateId ? '本模板记录' : '我的记录';
   const ids = [...new Set([...cache.history.ids, ...cache.pinnedIds])];
   const missing = Object.entries(cache.missing).filter(([, value]) => !templateId || value.templateId === templateId);
@@ -29,14 +40,13 @@ export function TaskHistory() {
           onClick={() => controller.refresh()}>刷新记录</button>}
       </div>
       {templateId && <Link className={styles.allRecords} href="/history">查看全部记录 →</Link>}
-      <div className={templateId ? styles.historyContent : undefined}
+      <div ref={content} className={templateId ? styles.historyContent : undefined}
         role={templateId ? 'region' : undefined} aria-label={templateId ? '本模板记录列表' : undefined}
         tabIndex={templateId ? 0 : undefined}>
         {!authenticated ? <p className={styles.notice}>选择演示身份后查看个人记录。</p> : <>
           {cache.anomaly && <p role="alert" className={styles.error}>{cache.anomaly}</p>}
-          {cache.history.read.status === 'loading' && <p role="status" className={styles.notice}>
-            {cache.history.loadingMore ? '正在加载更多记录…' : '正在读取制作记录…'}
-          </p>}
+          {read.status === 'loading' && !cache.history.loadingMore &&
+            <p role="status" className={styles.notice}>正在读取制作记录…</p>}
           {cache.history.read.status === 'error' && <div className={styles.notice} role="alert">
             <p>记录暂时无法加载。{cache.history.read.message}</p>
             <button type="button" onClick={() => retry(() => controller.loadHistory(false))}>重新加载记录</button>
@@ -58,8 +68,9 @@ export function TaskHistory() {
           ))}
           {isEmpty &&
             <p className={styles.notice}>还没有制作记录，<Link href="/">选择模板开始创作</Link>。</p>}
-          {cache.history.cursor && <button className={styles.more} type="button" disabled={cache.history.read.status === 'loading'}
-            onClick={() => controller.loadHistory(true)}>加载更多</button>}
+          {read.status === 'loading' && cache.history.loadingMore &&
+            <p role="status" className={styles.notice}>正在加载更多记录…</p>}
+          {cursor && <div ref={end} className={styles.scrollEnd} aria-hidden="true" />}
         </>}
       </div>
     </section>

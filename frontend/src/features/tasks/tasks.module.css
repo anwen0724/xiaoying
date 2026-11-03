@@ -42,8 +42,8 @@
   color: var(--accent);
 }
 
-.more {
-  margin-top: 24px;
+.scrollEnd {
+  height: 1px;
 }
 
 .grid {

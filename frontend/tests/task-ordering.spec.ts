@@ -47,10 +47,10 @@ test('refresh discards a late page response and can recover a page read failure'
   });
   await page.route('**/api/tasks/active', (route) => route.fulfill({ json: { items: [] } }));
   await openCreation(page);
-  await page.getByRole('button', { name: '加载更多', exact: true }).click();
   await expect(page.getByRole('alert').filter({ hasText: '这一页暂时无法读取' })).toBeVisible();
   await expect(page.getByRole('article', { name: `任务 ${failedTask(21).id}`, exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '加载更多', exact: true }).click();
+  expect(pageReads).toBe(1);
+  await page.getByRole('button', { name: '重新加载记录', exact: true }).click();
   await started.promise;
   refreshing = true;
   await page.getByRole('button', { name: '刷新记录', exact: true }).click();
@@ -81,6 +81,7 @@ test('a newly accepted task survives an older initial history response', async (
 });
 
 test('loading more appends unique records and an invalid cursor requires a fresh page', async ({ page }) => {
+  let refreshed = false;
   await page.route((url) => url.pathname === '/api/tasks', (route) => {
     const cursor = new URL(route.request().url()).searchParams.get('cursor');
     if (cursor === 'expired-page') {
@@ -88,18 +89,17 @@ test('loading more appends unique records and an invalid cursor requires a fresh
     }
     return route.fulfill({ json: cursor === 'page-two'
       ? { items: [failedTask(31), failedTask(32)], nextCursor: 'expired-page' }
-      : { items: [failedTask(31)], nextCursor: 'page-two' },
+      : { items: [failedTask(31)], nextCursor: refreshed ? null : 'page-two' },
     });
   });
   await page.route('**/api/tasks/active', (route) => route.fulfill({ json: { items: [] } }));
   await openCreation(page);
-  await page.getByRole('button', { name: '加载更多', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(2);
-  await page.getByRole('button', { name: '加载更多', exact: true }).click();
   await expect(page.getByRole('region', { name: '本模板记录', exact: true }).getByRole('alert')).toContainText('分页位置已失效');
   await expect(page.getByRole('article')).toHaveCount(2);
   await expect(page.getByRole('button', { name: '加载更多', exact: true })).toHaveCount(0);
+  refreshed = true;
   await page.getByRole('button', { name: '刷新记录', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(1);
-  await expect(page.getByRole('button', { name: '加载更多', exact: true })).toBeEnabled();
+  await expect(page.getByRole('region', { name: '本模板记录', exact: true }).getByRole('alert')).toHaveCount(0);
 });
