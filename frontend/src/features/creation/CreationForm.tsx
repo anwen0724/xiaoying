@@ -55,8 +55,8 @@ function ScopedForm({ template, canWrite, onUnauthorized }: {
         </div>
         <div className={styles.submitArea}>
           <button className={styles.primary} type="submit" disabled={!canSubmit}>{submitLabel}</button>
-          <p role="status">{pending ? '正在确认受理结果，请勿重复提交。'
-            : canSubmit ? '素材已准备好，可以提交制作。' : `请先完成 ${template.requiredImageCount} 张图片的上传。`}</p>
+          {(pending || canSubmit) && <p role="status">{pending ? '正在确认受理结果，请勿重复提交。'
+            : '素材已准备好，可以提交制作。'}</p>}
         </div>
       </form>
       <SubmissionFeedback submission={submission} />

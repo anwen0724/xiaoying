@@ -47,7 +47,6 @@ export async function TemplateCatalog({ category }: { category?: string }) {
           )}
         </div>
       )}
-      <p className="page-footer">演示模板使用预置结果，不对上传图片进行真实合成。</p>
     </>
   );
 }

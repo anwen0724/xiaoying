@@ -42,7 +42,7 @@ export function IdentityPicker() {
       <div className={styles.status} aria-live="polite">
         {session.status === 'loading' && <span>正在确认身份…</span>}
         {session.status === 'changing' && <span>正在切换身份…</span>}
-        {session.status === 'ready' && <span>{user ? `当前身份：${user.displayName}` : '尚未选择身份'}</span>}
+        {user && <span>当前身份：{user.displayName}</span>}
         {session.status === 'error' && <>
           <span role="alert">身份未确认：{session.message}</span>
           <button type="button" onClick={async () => { await refreshIdentity(); }}>重试确认身份</button>

@@ -4,6 +4,7 @@ test('choose, restore, switch and leave a demo identity', async ({ page }) => {
   await page.goto('/');
   const identity = page.getByRole('combobox', { name: '演示身份' });
   await expect(identity).toBeEnabled();
+  await expect(page.getByText('尚未选择身份', { exact: true })).toHaveCount(0);
   await identity.selectOption('demo-alice');
   await expect(page.getByText('当前身份：小禾', { exact: true })).toBeVisible();
   await page.reload();
@@ -11,7 +12,10 @@ test('choose, restore, switch and leave a demo identity', async ({ page }) => {
   await identity.selectOption('demo-bob');
   await expect(page.getByText('当前身份：阿远', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '退出身份', exact: true }).click();
-  await expect(page.getByText('尚未选择身份', { exact: true })).toBeVisible();
+  await expect(identity).toBeEnabled();
+  await expect(identity).toHaveValue('');
+  await expect(page.getByRole('button', { name: '退出身份', exact: true })).toHaveCount(0);
+  await expect(page.getByText('尚未选择身份', { exact: true })).toHaveCount(0);
 });
 
 test('failed identity mutation rechecks the session before enabling private writes', async ({ page }) => {
@@ -25,5 +29,6 @@ test('failed identity mutation rechecks the session before enabling private writ
   await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
   await expect(page.getByText(/已重新确认当前身份/)).toBeVisible();
   await expect(page.getByText('当前身份：小禾', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('图片 1', { exact: true })).toBeEnabled();
+  await expect(page.getByRole('region', { name: '制作区域', exact: true })
+    .getByLabel('图片 1', { exact: true })).toBeEnabled();
 });

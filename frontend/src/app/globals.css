@@ -256,12 +256,6 @@ select {
   top: 8px;
 }
 
-.page-footer {
-  margin-top: 20px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
 @media (max-width: 1000px) {
   .catalog-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
