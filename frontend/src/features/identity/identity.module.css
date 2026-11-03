@@ -29,12 +29,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   width: 98px;
   min-height: 40px;
   padding: 6px 10px;
   background: var(--surface);
   outline: none;
+  white-space: nowrap;
 }
 
 .trigger:active:not(:disabled) {

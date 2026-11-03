@@ -162,13 +162,35 @@ select {
 }
 
 .main-nav a {
+  position: relative;
   display: inline-flex;
   min-height: 44px;
   align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 160ms ease;
 }
 
-.main-nav a:hover {
+.main-nav a:hover, .main-nav a[aria-current] {
   color: var(--accent);
+}
+
+.main-nav a::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 20px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.main-nav a[aria-current]::after {
+  opacity: 1;
 }
 
 .brand-note {
@@ -262,6 +284,10 @@ select {
 }
 
 @media (min-width: 1001px) {
+  .main-nav {
+    margin-left: 12px;
+  }
+
   body:has(.creation-layout) {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { IdentityProvider } from '../features/identity/IdentityProvider';
 import { IdentityPicker } from '../features/identity/IdentityPicker';
+import { MainNavigation } from './MainNavigation';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -24,10 +25,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 </svg>
                 小影 <span className="brand-note">素材制作</span>
               </Link>
-              <nav className="main-nav" aria-label="主导航">
-                <Link href="/">模板库</Link>
-                <Link href="/history">我的素材</Link>
-              </nav>
+              <MainNavigation />
               <IdentityPicker />
             </div>
           </header>
