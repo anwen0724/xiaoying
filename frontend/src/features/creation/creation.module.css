@@ -138,13 +138,12 @@
 .slotActions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 12px;
+  align-items: center;
+  gap: 0 12px;
 }
 .slotActions button {
   border-color: transparent;
-  padding: 6px 10px;
-  font-size: 12px;
+  padding: 6px 8px;
 }
 .error {
   color: var(--negative);

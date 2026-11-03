@@ -38,39 +38,39 @@ export function UploadField({ slot, position, accept, requirementsId, disabled, 
             {slot.status === 'ready' && '上传成功'}
             {slot.status === 'failed' && '尚未上传成功'}
           </span>
-          <label className={styles.fileLabel}>
-            {slot.status === 'empty' ? '选择图片' : '替换图片'}
-            <input ref={input} type="file" accept={accept} aria-label={`图片 ${position}`}
-              onClick={(event) => {
-                if (onRequestIdentity) {
-                  event.preventDefault();
-                  onRequestIdentity();
-                }
-              }}
-              aria-invalid={slot.status === 'failed' ? true : undefined}
-              aria-describedby={slot.status === 'failed' ? `${requirementsId} ${errorId}` : requirementsId}
-              onChange={async (event) => {
-                const file = event.target.files?.[0];
-                event.target.value = '';
-                if (file) await onChoose(file);
-              }} />
-          </label>
+          <div className={styles.slotActions}>
+            <label className={styles.fileLabel}>
+              {slot.status === 'empty' ? '选择图片' : '替换图片'}
+              <input ref={input} type="file" accept={accept} aria-label={`图片 ${position}`}
+                onClick={(event) => {
+                  if (onRequestIdentity) {
+                    event.preventDefault();
+                    onRequestIdentity();
+                  }
+                }}
+                aria-invalid={slot.status === 'failed' ? true : undefined}
+                aria-describedby={slot.status === 'failed' ? `${requirementsId} ${errorId}` : requirementsId}
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = '';
+                  if (file) await onChoose(file);
+                }} />
+            </label>
+            {slot.status !== 'empty' && (
+              <button type="button" aria-label={`移除图片 ${position}`} onClick={() => {
+                input.current?.focus();
+                onRemove();
+              }}>移除</button>
+            )}
+            {slot.status === 'failed' && slot.retryable && (
+              <button type="button" onClick={async () => {
+                input.current?.focus();
+                await onChoose(slot.file);
+              }}>重试上传图片 {position}</button>
+            )}
+          </div>
         </div>
       </div>
-      {slot.status !== 'empty' && (
-        <div className={styles.slotActions}>
-          {slot.status === 'failed' && slot.retryable && (
-            <button type="button" onClick={async () => {
-              input.current?.focus();
-              await onChoose(slot.file);
-            }}>重试上传图片 {position}</button>
-          )}
-          <button type="button" aria-label={`移除图片 ${position}`} onClick={() => {
-            input.current?.focus();
-            onRemove();
-          }}>移除</button>
-        </div>
-      )}
       {slot.status === 'failed' && <p className={styles.error} role="alert" id={errorId}>{slot.message}</p>}
     </fieldset>
   );
