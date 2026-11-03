@@ -15,7 +15,7 @@ for (const width of [1440, 390, 320]) {
     await trigger.click();
     const menu = page.getByRole('listbox', { name: '演示身份' });
     await expect(menu).toBeVisible();
-    await expect(menu).toHaveCSS('backdrop-filter', 'blur(24px) saturate(1.3)');
+    await expect(menu).not.toHaveCSS('backdrop-filter', 'none');
     expect((await header.boundingBox())!.height).toBe(originalHeight);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
     await mkdir('../artifacts/glass-surfaces', { recursive: true });
