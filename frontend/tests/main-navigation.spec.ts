@@ -1,6 +1,16 @@
 import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 
+test('materials loading shell uses the current material naming', async ({ request }) => {
+  const response = await request.get('/history');
+  expect(response.ok()).toBeTruthy();
+  const html = await response.text();
+  expect(html).toContain('aria-label="正在加载素材页面"');
+  expect(html).toContain('正在加载素材…');
+  expect(html).not.toContain('我的制作记录');
+  expect(html).not.toContain('正在加载记录页面');
+});
+
 for (const width of [1440, 390, 320]) {
   test(`main navigation identifies the current section at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -12,7 +22,8 @@ for (const width of [1440, 390, 320]) {
     const materials = nav.getByRole('link', { name: '我的素材', exact: true });
     await expect(catalog).toHaveAttribute('aria-current', 'page');
     await expect(materials).not.toHaveAttribute('aria-current');
-    await expect(catalog).toHaveCSS('font-size', '15px');
+    await expect(catalog).toHaveCSS('font-size', '16px');
+    await expect(catalog).toHaveCSS('font-weight', '600');
     expect((await page.getByRole('banner').boundingBox())!.height).toBe(width > 1000 ? 65 : 113);
     if (width > 1000) {
       const brand = (await page.getByRole('link', { name: '小影素材制作，返回模板库' }).boundingBox())!;
