@@ -52,7 +52,7 @@ test('switching identity invalidates an old upload and clears private form state
   release.release();
   await delivered.promise;
   await finishResponseAndRender(page, await lateResponse);
-  await expect(page.getByText('0 / 1 已准备', { exact: true })).toBeVisible();
+  await expect(page.getByText('已选 0 / 1 张', { exact: true })).toBeVisible();
   await expect(page.getByText('mountain.png', { exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: '开始制作', exact: true })).toBeDisabled();
 });
@@ -87,7 +87,7 @@ test('pending submission is single-flight and a late receipt cannot enter anothe
   release.release();
   await delivered.promise;
   await finishResponseAndRender(page, await lateResponse);
-  await expect(page.getByText('0 / 1 已准备', { exact: true })).toBeVisible();
+  await expect(page.getByText('已选 0 / 1 张', { exact: true })).toBeVisible();
   await expect(page.getByRole('region', { name: '提交回执' })).toHaveCount(0);
   expect(writes).toBe(1);
 });
@@ -97,9 +97,9 @@ test('template navigation and return discard previously uploaded material', asyn
   await readyImage(page);
   await page.getByRole('link', { name: '返回模板库', exact: true }).click();
   await page.getByRole('link', { name: /海边双拼/ }).click();
-  await expect(page.getByText('0 / 2 已准备', { exact: true })).toBeVisible();
+  await expect(page.getByText('已选 0 / 2 张', { exact: true })).toBeVisible();
   await expect(page.getByText('mountain.png', { exact: true })).toHaveCount(0);
   await page.getByRole('link', { name: '返回模板库', exact: true }).click();
   await page.getByRole('link', { name: /山野明信片/ }).click();
-  await expect(page.getByText('0 / 1 已准备', { exact: true })).toBeVisible();
+  await expect(page.getByText('已选 0 / 1 张', { exact: true })).toBeVisible();
 });

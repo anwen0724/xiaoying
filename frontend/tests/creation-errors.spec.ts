@@ -30,7 +30,7 @@ test('expired session clears assets and requires choosing identity again', async
   await context.clearCookies();
   await page.getByRole('button', { name: '开始制作', exact: true }).click();
   await expect(page.getByText('会话已失效，请重新选择身份。', { exact: true })).toBeVisible();
-  await expect(page.getByText('0 / 1 已准备', { exact: true })).toBeVisible();
+  await expect(page.getByText('已选 0 / 1 张', { exact: true })).toBeVisible();
   await expect(page.getByLabel('图片 1', { exact: true })).toBeDisabled();
   await page.getByRole('combobox', { name: '演示身份' }).selectOption('demo-bob');
   await expect(page.getByLabel('图片 1', { exact: true })).toBeEnabled();

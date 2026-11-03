@@ -122,7 +122,6 @@ function ScopedForm({ template, canWrite, identityReady, onUnauthorized, childre
           <SubmissionFeedback submission={submission} />
         </div>
         <div className={styles.submitArea}>
-          <p role="status">{readyCount} / {template.requiredImageCount} 已准备</p>
           <button className={styles.primary} type="submit" disabled={!canSubmit}>{submitLabel}</button>
           {pending && <p role="status">正在确认受理结果，请勿重复提交。</p>}
         </div>

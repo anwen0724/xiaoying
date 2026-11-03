@@ -21,6 +21,7 @@ for (const width of [1440, 390, 320]) {
     const form = page.getByRole('region', { name: '制作区域', exact: true });
     await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
     await expect(form.locator('input[type="file"]')).toHaveCount(1);
+    await expect(form.getByText(/\d+ \/ \d+ 已准备/)).toHaveCount(0);
     const first = form.getByLabel('图片 1', { exact: true });
     await expect(first).toHaveAttribute('multiple', '');
     const submit = form.getByRole('button', { name: '开始制作', exact: true });
