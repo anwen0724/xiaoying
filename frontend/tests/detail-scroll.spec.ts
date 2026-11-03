@@ -19,6 +19,8 @@ for (const [width, height, template] of [
     const left = page.locator('#main-content .creation-input');
     const list = page.getByRole('region', { name: '本模板记录列表', exact: true });
     if (width > 1000) {
+      await expect(left).toHaveCSS('scrollbar-width', 'none');
+      await expect(list).toHaveCSS('scrollbar-width', 'none');
       expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(height);
       await left.evaluate((element) => { element.scrollTop = element.scrollHeight; });
       if (template === 'inspiration-grid') {
@@ -30,8 +32,13 @@ for (const [width, height, template] of [
       await page.mouse.wheel(0, 500);
       await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
       expect(await left.evaluate((element) => element.scrollTop)).toBe(leftScroll);
+      await list.evaluate((element) => { element.scrollTop = 0; });
+      await list.focus();
+      await page.keyboard.press('PageDown');
+      await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
       expect(await page.evaluate(() => scrollY)).toBe(0);
     } else {
+      await expect(list).toHaveCSS('scrollbar-width', 'thin');
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
       expect(await left.evaluate((element) => element.scrollHeight <= element.clientHeight)).toBe(true);

@@ -22,6 +22,12 @@
   scrollbar-gutter: stable;
 }
 
+@media (min-width: 1001px) {
+  .historyContent {
+    scrollbar-width: none;
+  }
+}
+
 .historyHeading {
   display: flex;
   align-items: center;
