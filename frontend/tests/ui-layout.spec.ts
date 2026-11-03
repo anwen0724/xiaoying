@@ -49,10 +49,8 @@ for (const width of [1440, 768, 390]) {
     await expect(page.getByRole('img', { name: '山野明信片制作结果', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: '刷新记录', exact: true })).toBeEnabled();
     const firstCard = page.getByRole('article').first();
-    await expect(firstCard.getByLabel('任务 ID', { exact: true })).not.toBeVisible();
-    await firstCard.getByText('任务详情', { exact: true }).click();
-    await expect(firstCard.getByLabel('任务 ID', { exact: true })).toBeVisible();
-    await firstCard.getByText('任务详情', { exact: true }).click();
+    await expect(firstCard.getByText('任务详情', { exact: true })).toHaveCount(0);
+    await expect(firstCard.getByRole('button', { name: '放大查看山野明信片制作结果', exact: true })).toBeVisible();
     await page.emulateMedia({ reducedMotion: 'reduce' });
     expect(await page.locator('main').evaluate((element) =>
       [...element.querySelectorAll('*')].every((child) => getComputedStyle(child).animationName === 'none'),

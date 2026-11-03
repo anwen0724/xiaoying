@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { useRef } from 'react';
+import { ImagePreview } from '../../shared/ui/ImagePreview';
 import type { UploadSlot } from './types';
 import styles from './creation.module.css';
 
@@ -25,8 +25,8 @@ export function UploadField({ slot, position, accept, requirementsId, disabled, 
       <legend>图片 {position}</legend>
       <div className={`${styles.uploadBody} ${slot.status === 'empty' ? styles.emptyBody : ''}`}>
         {preview ? (
-          <Image className={styles.preview} src={preview} width={120} height={100}
-            alt={`图片 ${position} 预览`} unoptimized />
+          <ImagePreview key={preview} className={styles.preview} src={preview} width={120} height={100}
+            alt={`图片 ${position} 预览`} />
         ) : <span className={styles.emptySlot} aria-hidden="true">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="4" /><path d="m4 17 5-5 4 4 3-3 5 5M15 7h4m-2-2v4" /></svg>
         </span>}

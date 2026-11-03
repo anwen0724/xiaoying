@@ -186,26 +186,6 @@
   color: var(--accent);
 }
 
-.taskDetails {
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.taskDetails summary {
-  padding: 4px 0;
-  width: fit-content;
-}
-
-.taskDetails p {
-  margin-top: 8px;
-}
-
-.taskId {
-  overflow-wrap: anywhere;
-  font-family: Consolas, monospace;
-}
-
 .notice {
   color: var(--muted);
   margin-top: 24px;
@@ -218,10 +198,6 @@
 
 .resultError button, .notice button {
   margin-top: 12px;
-}
-
-.card p time {
-  display: inline;
 }
 
 @media (max-width: 720px) {

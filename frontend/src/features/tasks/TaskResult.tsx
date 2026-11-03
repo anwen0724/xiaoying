@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { ImagePreview } from '../../shared/ui/ImagePreview';
 import { useIdentity } from '../identity/IdentityProvider';
 import { isAbort, RequestError } from '../../shared/api/http';
 import styles from './tasks.module.css';
@@ -51,7 +51,7 @@ export function TaskResult({ url, title }: { url: string; title: string }) {
         </div>
       )}
       {preview.status === 'ready' && (
-        <Image className={styles.result} src={preview.url} width={800} height={1000} unoptimized
+        <ImagePreview className={styles.result} src={preview.url} width={800} height={1000}
           alt={`${title}制作结果`} onError={() => setPreview({ status: 'error' })} />
       )}
     </div>

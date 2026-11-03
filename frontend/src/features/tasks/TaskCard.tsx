@@ -29,12 +29,6 @@ export function TaskCard({ entry }: { entry: TaskEntry }) {
           {task.status === 'SUCCEEDED' && <span className={styles.status} data-status={task.status}>{statusLabels[task.status]}</span>}
         </div>
         <time dateTime={task.createdAt}>{new Date(task.createdAt).toLocaleString('zh-CN', { hour12: false })}</time>
-        <details className={styles.taskDetails}>
-          <summary>任务详情</summary>
-          {task.status === 'SUCCEEDED' && <p>结果整理完成</p>}
-          <p className={styles.taskId} aria-label="任务 ID">{task.id}</p>
-          <p>上次确认：<time dateTime={entry.checkedAt}>{new Date(entry.checkedAt).toLocaleTimeString('zh-CN', { hour12: false })}</time></p>
-        </details>
       </div>
     </article>
   );
