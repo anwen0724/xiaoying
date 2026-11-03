@@ -17,9 +17,11 @@ test('compact upload card wraps long names and retains failure recovery on mobil
         mimeType: 'image/png', sizeBytes: 100, previewUrl: '/api/assets/mock/content',
       } });
   });
-  await page.goto('/templates/mountain-card');
+  await page.goto('/templates/travel-duo');
   const slot = page.getByRole('group', { name: '图片 1', exact: true });
   const input = slot.getByLabel('图片 1', { exact: true });
+  await expect(page.getByRole('combobox', { name: '演示身份' })).toHaveValue('demo-alice');
+  await expect(input).toBeEnabled();
   const name = '这是一张需要保留完整文件名并且能够自动换行的山野风景图片.png';
   await input.setInputFiles({ name, mimeType: 'image/png', buffer: await readFile(mountain) });
   const error = slot.getByRole('alert');
@@ -40,5 +42,11 @@ test('compact upload card wraps long names and retains failure recovery on mobil
   await expect(input).toBeFocused();
   const picker = page.waitForEvent('filechooser');
   await slot.click({ position: { x: 8, y: 60 } });
-  await picker;
+  await (await picker).setFiles(mountain);
+  await expect(slot.getByText('上传成功', { exact: true })).toBeVisible();
+  const secondSlot = page.getByRole('group', { name: '图片 2', exact: true });
+  expect((await slot.boundingBox())!.height).toBe((await secondSlot.boundingBox())!.height);
+  await page.getByRole('region', { name: '制作区域', exact: true }).screenshot({
+    path: '../artifacts/upload-compact/equal-height-390.png',
+  });
 });

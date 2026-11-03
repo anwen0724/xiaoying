@@ -42,7 +42,7 @@ for (const width of [1440, 390]) {
     const removeBounds = (await form.getByRole('button', { name: '移除图片 1', exact: true }).boundingBox())!;
     expect(Math.abs(replaceBounds.y - removeBounds.y)).toBeLessThan(1);
     expect(removeBounds.x).toBeGreaterThan(replaceBounds.x + replaceBounds.width);
-    expect((await slot.boundingBox())!.height).toBeLessThan(155);
+    expect((await slot.boundingBox())!.height).toBe(emptyHeight);
     await upload.click();
     const dialog = page.getByRole('dialog', { name: '图片 1 预览', exact: true });
     await expect(dialog).toBeVisible();
