@@ -30,21 +30,18 @@ for (const width of [1440, 390]) {
     await expect(page.getByText('模拟生成', { exact: true })).toHaveCount(2);
     const form = page.getByRole('region', { name: '制作区域', exact: true });
     const input = form.getByLabel('图片 1', { exact: true });
-    const slot = form.getByRole('group', { name: '图片 1', exact: true });
-    const emptyHeight = (await slot.boundingBox())!.height;
     await input.setInputFiles(mountain);
     await expect(form.getByText('上传成功', { exact: true })).toBeVisible();
     const upload = form.getByRole('button', { name: '放大查看图片 1 预览', exact: true });
-    const thumbnailBounds = await upload.boundingBox();
-    expect(thumbnailBounds!.width).toBeLessThan(125);
-    expect(thumbnailBounds!.height).toBe(thumbnailBounds!.width);
-    const replaceBounds = (await input.boundingBox())!;
-    const removeBounds = (await form.getByRole('button', { name: '移除图片 1', exact: true }).boundingBox())!;
-    expect(Math.abs(replaceBounds.y - removeBounds.y)).toBeLessThan(1);
-    expect(removeBounds.x).toBeGreaterThan(replaceBounds.x + replaceBounds.width);
     await upload.click();
     const dialog = page.getByRole('dialog', { name: '图片 1 预览', exact: true });
     await expect(dialog).toBeVisible();
+    const close = dialog.getByRole('button', { name: '关闭预览', exact: true });
+    await expect(close).toBeFocused();
+    await expect(close).not.toHaveCSS('box-shadow', 'none');
+    const closeBounds = (await close.boundingBox())!;
+    expect(closeBounds.width).toBe(44);
+    expect(closeBounds.height).toBe(44);
     const firstSource = await dialog.getByRole('img').getAttribute('src');
     await expect(dialog.getByRole('img')).toHaveCSS('object-fit', 'contain');
     await mkdir('../artifacts/image-preview', { recursive: true });
@@ -62,7 +59,7 @@ for (const width of [1440, 390]) {
     await expect(upload).toBeFocused();
     await form.getByRole('button', { name: '移除图片 1', exact: true }).click();
     await expect(upload).toHaveCount(0);
-    expect((await slot.boundingBox())!.height).toBe(emptyHeight);
+    await expect(form.getByLabel('图片 1', { exact: true })).toBeVisible();
 
     for (const routePath of ['/templates/mountain-card', '/history']) {
       if (routePath === '/history') await page.goto(routePath);

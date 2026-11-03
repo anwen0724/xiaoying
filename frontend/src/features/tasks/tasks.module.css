@@ -63,6 +63,13 @@
   background: var(--raised);
 }
 
+.filters a[aria-current='page'] {
+  background: var(--glass-control-fill);
+  box-shadow: var(--glass-control-shadow);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+}
+
 .scrollEnd {
   height: 1px;
 }

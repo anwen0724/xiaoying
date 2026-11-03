@@ -46,6 +46,8 @@ for (const width of [1440, 390]) {
     await expect(page.getByRole('article')).toContainText('山野明信片');
     await page.reload();
     await expect(filters.getByRole('link', { name: '旅行记忆' })).toHaveAttribute('aria-current', 'page');
+    await expect(filters.getByRole('link', { name: '旅行记忆' })).not.toHaveCSS('box-shadow', 'none');
+    await expect(filters.getByRole('link', { name: '全部', exact: true })).toHaveCSS('box-shadow', 'none');
     await expect(page.getByRole('article')).toHaveCount(1);
     expect(activeCategories).toContain('travel');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
