@@ -47,14 +47,14 @@ for (const width of [1440, 768, 390]) {
     await expect(form.getByText('上传成功', { exact: true })).toBeVisible();
     expect(fileChoosers).toBe(1);
 
-    const history = page.getByRole('region', { name: '本模板记录', exact: true });
+    const history = page.getByRole('region', { name: '历史素材', exact: true });
     const list = history.getByRole('region', { name: '本模板记录列表', exact: true });
     await expect(history.getByRole('article')).toHaveCount(20);
     const initialHeight = (await history.boundingBox())!.height;
     expect(initialHeight).toBeLessThan(900);
     await list.scrollIntoViewIfNeeded();
     expect(await list.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
-    const heading = history.getByRole('heading', { name: '本模板记录', exact: true });
+    const heading = history.getByRole('heading', { name: '历史素材', exact: true });
     const headingY = (await heading.boundingBox())!.y;
     const pageY = await page.evaluate(() => scrollY);
     await list.hover();

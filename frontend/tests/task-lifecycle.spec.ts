@@ -107,7 +107,7 @@ test('active read failure leaves known tasks usable and retry discovers the rema
     return route.fulfill({ json: { items: ids.map((id) => failedTask(Number(id.slice(-12)))), missingIds: [] } });
   });
   await openCreation(page);
-  await expect(page.getByRole('region', { name: '本模板记录', exact: true }).getByRole('alert')).toContainText('未完成任务恢复不完整');
+  await expect(page.getByRole('region', { name: '历史素材', exact: true }).getByRole('alert')).toContainText('未完成任务恢复不完整');
   await expect(page.getByRole('article')).toContainText('制作失败');
   unavailable = false;
   await page.getByRole('button', { name: '重试恢复未完成任务', exact: true }).click();

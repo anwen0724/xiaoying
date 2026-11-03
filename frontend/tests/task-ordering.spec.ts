@@ -95,11 +95,11 @@ test('loading more appends unique records and an invalid cursor requires a fresh
   await page.route('**/api/tasks/active', (route) => route.fulfill({ json: { items: [] } }));
   await openCreation(page);
   await expect(page.getByRole('article')).toHaveCount(2);
-  await expect(page.getByRole('region', { name: '本模板记录', exact: true }).getByRole('alert')).toContainText('分页位置已失效');
+  await expect(page.getByRole('region', { name: '历史素材', exact: true }).getByRole('alert')).toContainText('分页位置已失效');
   await expect(page.getByRole('article')).toHaveCount(2);
   await expect(page.getByRole('button', { name: '加载更多', exact: true })).toHaveCount(0);
   refreshed = true;
   await page.getByRole('button', { name: '刷新记录', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(1);
-  await expect(page.getByRole('region', { name: '本模板记录', exact: true }).getByRole('alert')).toHaveCount(0);
+  await expect(page.getByRole('region', { name: '历史素材', exact: true }).getByRole('alert')).toHaveCount(0);
 });

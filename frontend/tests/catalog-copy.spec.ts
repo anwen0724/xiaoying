@@ -18,3 +18,13 @@ for (const width of [1440, 390]) {
     await expect(page).toHaveURL(/\/history$/);
   });
 }
+
+test('template history uses the requested title and keeps the all-records link', async ({ page }) => {
+  await page.route('**/api/session', (route) => route.fulfill({ status: 401, json: {} }));
+  await page.goto('/templates/mountain-card');
+  await expect(page.getByRole('heading', { name: '历史素材', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '本模板记录', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: '查看全部记录 →', exact: true })).toHaveAttribute('href', '/history');
+  await mkdir('../artifacts/catalog-copy', { recursive: true });
+  await page.screenshot({ path: '../artifacts/catalog-copy/history-title.png' });
+});

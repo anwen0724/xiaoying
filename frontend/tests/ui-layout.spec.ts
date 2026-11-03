@@ -65,7 +65,7 @@ for (const width of [1440, 768, 390]) {
       };
       const submit = [...document.querySelectorAll('button')].find((button) => button.textContent === '开始制作')!;
       return { canvas: bounds('.canvas'), layout: bounds('.creation-layout'), input: bounds('.creation-input'),
-        history: bounds('section[aria-label="本模板记录"]'), submitBottom: submit.getBoundingClientRect().bottom + scrollY };
+        history: bounds('section[aria-label="历史素材"]'), submitBottom: submit.getBoundingClientRect().bottom + scrollY };
     });
     await writeFile(`${directory}/metrics-${width}.json`, JSON.stringify(metrics, null, 2));
     if (width === 1440) expect(metrics.submitBottom).toBeLessThanOrEqual(900);

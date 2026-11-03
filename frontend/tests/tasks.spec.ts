@@ -11,7 +11,7 @@ test('each accepted task remains visible after the next submission and material 
   await expect(receiptId).not.toHaveText(firstId);
   const secondId = await receiptId.innerText();
   await page.getByRole('button', { name: '移除图片 1' }).click();
-  const history = page.getByRole('region', { name: '本模板记录', exact: true });
+  const history = page.getByRole('region', { name: '历史素材', exact: true });
   await expect(history.getByRole('article', { name: `任务 ${firstId}`, exact: true })).toBeVisible();
   await expect(history.getByRole('article', { name: `任务 ${secondId}`, exact: true })).toBeVisible();
 });

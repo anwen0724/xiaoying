@@ -20,7 +20,7 @@ export function TaskHistory() {
     observer.observe(end.current);
     return () => observer.disconnect();
   }, [authenticated, controller, cursor, read.status, templateId]);
-  const title = templateId ? '本模板记录' : '我的记录';
+  const title = templateId ? '历史素材' : '我的记录';
   const ids = [...new Set([...cache.history.ids, ...cache.pinnedIds])];
   const missing = Object.entries(cache.missing).filter(([, value]) => !templateId || value.templateId === templateId);
   const entries = ids.flatMap((id) => cache.entries[id] ? [cache.entries[id]] : [])

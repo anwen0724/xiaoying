@@ -76,7 +76,7 @@ test('empty history waits for unfinished-task recovery and does not hide its fai
       : { json: { items: [] } });
   });
   await openCreation(page);
-  const history = page.getByRole('region', { name: '本模板记录', exact: true });
+  const history = page.getByRole('region', { name: '历史素材', exact: true });
   await expect(history.getByRole('button', { name: '刷新记录', exact: true })).toBeEnabled();
   await expect(history.getByText('正在恢复未完成任务…', { exact: true })).toBeVisible();
   await expect(history.getByText(/还没有制作记录/)).toHaveCount(0);
@@ -88,7 +88,7 @@ test('empty history waits for unfinished-task recovery and does not hide its fai
   await retry.focus();
   await page.keyboard.press('Enter');
   await expect(history.getByText(/还没有制作记录/)).toBeVisible();
-  await expect(history.getByRole('heading', { name: '本模板记录', exact: true })).toBeFocused();
+  await expect(history.getByRole('heading', { name: '历史素材', exact: true })).toBeFocused();
 });
 
 test('history retry keeps a stable focus target after the retry button disappears', async ({ page }) => {
@@ -98,14 +98,14 @@ test('history retry keeps a stable focus target after the retry button disappear
     : { json: { items: [], nextCursor: null } }));
   await page.route('**/api/tasks/active', (route) => route.fulfill({ json: { items: [] } }));
   await openCreation(page);
-  const history = page.getByRole('region', { name: '本模板记录', exact: true });
+  const history = page.getByRole('region', { name: '历史素材', exact: true });
   const retry = history.getByRole('button', { name: '重新加载记录', exact: true });
   await expect(retry).toBeVisible();
   unavailable = false;
   await retry.focus();
   await page.keyboard.press('Enter');
   await expect(history.getByText(/还没有制作记录/)).toBeVisible();
-  await expect(history.getByRole('heading', { name: '本模板记录', exact: true })).toBeFocused();
+  await expect(history.getByRole('heading', { name: '历史素材', exact: true })).toBeFocused();
 });
 
 test('keyboard can choose a file and retry its upload without losing focus', async ({ page }) => {
